@@ -14,7 +14,7 @@
 | Charts | Recharts |
 | Architecture | Feature-Sliced Design (adapted naming for Next.js) |
 | Package manager | pnpm |
-| Validation | Biome (`pnpm lint`), TypeScript (`pnpm typecheck`), tests/build when configured |
+| Validation | Biome (`pnpm lint`), TypeScript (`pnpm typecheck`), production build (`pnpm build`) |
 | Initial data source | Typed deterministic simulation fixtures |
 | Persistence | Browser localStorage for learning progress |
 | Deployment | Vercel |
@@ -221,7 +221,7 @@ Do not create Web Worker files, messaging protocols, RPC wrappers, fake progress
 - Lesson content is **Russian-language structured data** under `entities/lesson/content`, not hard-coded repeated page JSX.
 - Use a reusable lesson renderer: introduction, concise theory, code examples, prediction, experiment, explanation, and 2–3 practice questions.
 - C++ code snippets are read-only learning examples; compiling/executing user code is out of scope.
-- Answer evaluation uses pure, unit-testable functions; show explanations after a response. Do not present a multiple-choice guess as a mathematical proof.
+- Answer evaluation uses pure functions that can be verified independently; show explanations after a response. Do not present a multiple-choice guess as a mathematical proof.
 - An experiment embedded in a lesson should reuse the same configuration/result contracts as the free laboratory.
 - Keep lessons and free laboratory connected but usable independently.
 
@@ -243,7 +243,7 @@ Do not create Web Worker files, messaging protocols, RPC wrappers, fake progress
 - Preserve keyboard navigation, focus visibility, reasonable contrasts, and empty/error states.
 - Prefer Server Components for static route composition and the narrowest possible Client Components for interactive controls or localStorage.
 
-## 8. Testing and completion criteria
+## 8. Manual verification and completion criteria
 
 At minimum verify:
 
@@ -255,7 +255,7 @@ At minimum verify:
 - Progress survives reload and malformed localStorage data does not crash the app.
 - Mobile and desktop layouts remain usable.
 
-Before declaring a coding task complete, run the scripts that exist in the repository, especially `pnpm lint` and `pnpm typecheck`, then `pnpm test` and `pnpm build` where configured. Report any commands that could not run. Do not invent successful test results.
+Before declaring a coding task complete, run `pnpm lint`, `pnpm typecheck`, and `pnpm build`. Manually verify the relevant functionality and responsive layouts. Report any commands or checks that could not run. Do not claim successful validation without actually performing it. Automated unit testing is outside the current MVP scope.
 
 ## 9. Development order
 
@@ -265,7 +265,7 @@ Before declaring a coding task complete, run the scripts that exist in the repos
 4. Implement typed algorithm metadata, lesson content schema and one complete lesson.
 5. Implement the mock-backed experiment contract and functional lab charts/table with transparent labeling.
 6. Connect experiments inside lessons, exercises and progress persistence.
-7. Complete the planned lesson set, test behavior, refine UX and deploy to Vercel.
+7. Complete the planned lesson set, manually verify behavior, refine UX and deploy to Vercel.
 8. **Later, optional:** replace simulation with actual instrumented execution; only add Web Workers if they solve demonstrated responsiveness problems.
 
 When a task conflicts with the target tree, favor **minimal modifications to the actual repo** rather than wholesale restructuring. Keep `product.md` and `AGENTS.md` aligned with the MVP simulation decision when those files are next edited.

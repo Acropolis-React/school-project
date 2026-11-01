@@ -113,7 +113,7 @@ Answers are evaluated by deterministic pure functions, with a meaningful explana
 ## 10. Acceptance criteria
 
 1. A new visitor can learn without registration and reach a working lesson within one click from `/learn`.
-2. At least one end-to-end lesson is built and tested before expanding to all six.
+2. At least one end-to-end lesson is built and manually verified before expanding to all six.
 3. A user can change valid lab settings and see consistent data, chart and explanation updates.
 4. The same configuration always generates the same model points.
 5. All charts explicitly distinguish theoretical simulation from real measurement.
@@ -121,7 +121,7 @@ Answers are evaluated by deterministic pure functions, with a meaningful explana
 7. Progress persists after refresh within the same browser.
 8. Wrong inputs and corrupted stored data fail gracefully.
 9. Every section works on desktop and mobile and keyboard interaction is possible.
-10. `pnpm lint`, `pnpm typecheck`, `pnpm test`, and `pnpm build` succeed (or blockers are documented honestly).
+10. `pnpm lint`, `pnpm typecheck`, and `pnpm build` succeed (or blockers are documented honestly); key user flows are manually verified.
 
 ## 11. School research and evaluation
 
@@ -134,7 +134,7 @@ Answers are evaluated by deterministic pure functions, with a meaningful explana
 ## 12. Delivery milestones
 
 M0 — Existing repository setup, routing, adapted FSD, validation scripts, minimal shell.  
-M1 — Typed models and deterministic model functions with unit tests.  
+M1 — Typed models and deterministic model functions with manual checks of calculations and edge cases.  
 M2 — `/lab` configuration, model charts, tables and explanation.  
 M3 — First complete theory → prediction → visualization → practice lesson.  
 M4 — Remaining lessons using the same lesson engine.  

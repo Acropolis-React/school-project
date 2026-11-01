@@ -39,7 +39,7 @@
 ## Implementation discipline
 
 1. Identify the smallest complete user-facing outcome for the task.
-2. Implement the needed entities/pure logic and tests first when feasible.
+2. Implement the needed entities and pure logic first, then manually verify the behavior.
 3. Compose features/widgets/views, keeping FSD boundaries correct.
 4. Check empty, loading, invalid and responsive states where relevant.
 5. Update `architecture.md` when the actual architecture changes, and `product.md` only when scope or requirements change.
@@ -52,11 +52,10 @@ Run from the repository root:
 ```bash
 pnpm lint
 pnpm typecheck
-pnpm test
 pnpm build
 ```
 
-If scripts are missing, add and configure them as appropriate to the agreed tech stack; if an environment/tooling problem prevents execution, state precisely which command was not run or failed and why. Do not falsely report success. Add focused tests for calculations, answer evaluation, storage validation and significant behavior.
+If validation scripts are missing, add and configure `lint`, `typecheck`, and `build` as appropriate to the agreed tech stack; if an environment/tooling problem prevents execution, state precisely which command was not run or failed and why. Do not falsely report success. Manually verify calculations, answer evaluation, storage validation, key interactions, and responsive behavior. Automated unit testing is outside the current MVP scope.
 
 ## Final response format
 
