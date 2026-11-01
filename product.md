@@ -1,273 +1,144 @@
 # AlgoLab — Product Requirements Document
 
-> Status: MVP specification, version 1.0  
-> Project type: Grade 10 school software + research project  
-> Working title (RU): «Разработка интерактивного веб-приложения для изучения и экспериментального анализа временной сложности алгоритмов»  
-> Product language: Russian (all UI, explanations, feedback and exercises)  
-> Documentation language: English
+> Status: MVP specification · Language of the product: Russian · Documentation: English  
+> School project topic: «Разработка интерактивного веб-приложения для изучения и экспериментального анализа временной сложности алгоритмов».  
+> See `architecture.md` for implementation and `AGENTS.md` for Codex execution rules.
 
-## 1. Product summary
+## 1. Product vision
 
-**AlgoLab** is a free, browser-based educational lab for understanding the time complexity of algorithms. Learners study short explanations, predict what will happen, run **real computational experiments**, interpret measurements, and solve code-analysis problems.
+**AlgoLab** is a minimalist educational web application that teaches learners to **understand, determine, and explain Big O complexity**, not simply memorize formulas. Its core learning cycle is **Learn → Predict → Explore → Explain → Practice**.
 
-**Core promise:** Learn to independently determine and explain the Big O time complexity of simple algorithms, rather than memorizing a table of complexities.
+The MVP uses **deterministic, clearly labeled theoretical simulations** to illustrate algorithmic growth. It does **not** measure real execution times or operation counts. Real computational benchmarking can be introduced later if the project needs to substantiate its experimental-analysis title. Never describe mathematical plots as measured benchmarks.
 
-The product has two interconnected modes:
-1. **Guided learning:** a structured sequence of lessons, each combining theory, hypothesis, experiment and practice.
-2. **Free laboratory:** independently configure and compare algorithms, input distributions and input sizes.
+AlgoLab is not a landing page, LeetCode alternative, animated sorting playground, or arbitrary-code execution service.
 
-This is **not** a marketing landing page, animation showcase, LeetCode clone or general-purpose code-execution service.
+## 2. User problem, audience and value
 
-## 2. Problem, audience and value
+**Audience:** school pupils (especially grades 8–11), beginners in algorithms, early university students, and informatics olympiad beginners.
 
-### User problem
+**Problem:** Learners can memorize `O(n²)` or `O(log n)` but often cannot explain where it comes from, analyze new code, predict growth, or distinguish theory from observed running time.
 
-Beginners can memorize `O(n)`, `O(log n)` and `O(n²)` without understanding why these growth patterns emerge, how to analyze loops, or why theoretical and observed runtimes differ. Static explanations alone give too little opportunity to test hypotheses and reason from evidence.
+**Value:** A short, structured course connects explanations and C++ code examples to interactive model-based experiments and immediate practice feedback. A free lab supports independent exploration outside the course.
 
-### Primary users
+**Why return:** continue the curriculum, revisit mistakes, explore an algorithm encountered elsewhere, and compare growth classes with adjustable inputs. Do not add streaks, daily rewards, leaderboards or engagement gimmicks.
 
-- Secondary-school students (roughly grades 8–11) beginning algorithms and Big O.
-- Beginning programmers and introductory computer-science students.
-- Students preparing for introductory competitive-programming problems.
+## 3. Product experience and user flows
 
-### Core jobs to be done
+### First-time learner
 
-- **Learn:** “I want a clear introduction to Big O with working examples.”
-- **Test a hypothesis:** “If input size doubles, how will the amount of work change?”
-- **Compare:** “How does merge sort differ from bubble sort, and when does it matter?”
-- **Practice:** “Can I derive the complexity of an unfamiliar C++ loop on my own?”
-- **Return:** “I want to continue my course, retry errors, or compare another algorithm.”
+1. Open `/learn` directly; no sign-up or marketing landing page.
+2. Select a lesson (the first is suggested, but lessons are not locked).
+3. Read concise theory and a small annotated C++ snippet.
+4. Predict what will happen when input size grows.
+5. Explore an interactive **model visualization**, with a visible simulation disclosure.
+6. Interpret the curve and answer 2–3 practice questions.
+7. See explanations, save progress locally, and continue to the next lesson.
 
-### Value proposition
+### Returning learner
 
-- Theory becomes observable through authentic measurements.
-- Learners actively predict and explain results rather than passively watching an animation.
-- Progress persists locally so learners can resume lessons and revisit previous investigations.
-- A focused educational instrument with no account requirement or unnecessary UI.
+Open `/learn`, continue the last lesson, revisit wrong answers, or open `/progress` to view completed lessons and saved work.
 
-No monetization is planned. “Product/business value” means educational usefulness, repeated voluntary use, and demonstrable learning outcomes—not subscription revenue.
+### Free laboratory
 
-## 3. Product principles (non-negotiable)
+Open `/lab`, select comparable algorithms / growth models, configure input range, view theoretical curves and data table, understand assumptions, optionally save the configuration and results. No course step is required.
 
-1. **Learning before decoration.** Minimal interface; no landing page, parallax, gratuitous motion or gamification.
-2. **Real data only.** Never render invented benchmark results as measured data. Examples and placeholders must be labeled.
-3. **Prediction before reveal.** In guided experiments, collect a learner hypothesis before showing results when pedagogically relevant.
-4. **Explain the why.** Every chart must have context, measurement definition and an interpretation prompt.
-5. **Theory and experiment are different.** Timings and finite samples cannot prove Big O mathematically; they support hypotheses that are justified through code analysis.
-6. **Beginner-first language.** Russian, concise copy, defined terminology, concrete C++ code examples.
-7. **No sign-in required.** The MVP works completely in a browser; saving is local.
-8. **Small, finished scope.** Prefer five correctly instrumented algorithms and six polished lessons over many untested features.
+## 4. Main navigation and UX
 
-## 4. Information architecture and routes
+| Route | User purpose |
+| --- | --- |
+| `/` | Redirect to `/learn` |
+| `/learn` | Curriculum and continue-learning entry |
+| `/learn/[slug]` | Structured lesson with exercise steps |
+| `/lab` | Free complexity laboratory |
+| `/progress` | Local progress and saved explorations |
 
-| Route | Screen | Purpose |
-|---|---|---|
-| `/` | Redirect to `/learn` | Start using the app immediately; no promotional landing page |
-| `/learn` | Learning overview | Lesson list, progress, continue button |
-| `/learn/[slug]` | Guided lesson | Theory → prediction → experiment → interpretation → exercises |
-| `/lab` | Free lab | Compare algorithms on real datasets and interpret graphs |
-| `/progress` | Progress and history | Learned topics, exercise results, locally saved experiments |
+The UI must be restrained and useful: compact navigation, clear typography, neutral colors and one accent, helpful empty/loading/error states, responsive layout, accessible controls, no heavy animation or decorative landing page. **All user-facing text is in Russian.** Graphs need labeled axes, units, legends, and a corresponding data table or accessible equivalent.
 
-Shared shell: compact header with **AlgoLab** name and 3 navigation items: **Обучение**, **Лаборатория**, **Прогресс**. Keep navigation accessible on mobile. No sidebar is mandatory.
+## 5. Six-lesson MVP curriculum
 
-## 5. User journeys
+Each lesson follows the same configurable lesson runner, not a separate hand-built page. The components are short theory, code/reasoning example, prediction, simulation, interpretation and practice.
 
-### Journey A — first-time learner
+| # | Slug | Learning outcome | Model activity |
+| --- | --- | --- | --- |
+| 1 | `what-is-big-o` | Explain `n`, basic operations, asymptotic behavior and Big O | Compare linear and quadratic curves |
+| 2 | `linear-and-quadratic` | Analyze sequential and nested loops; `O(1)`, `O(n)`, `O(n²)` | Predict doubling effects |
+| 3 | `logarithmic` | Understand repeated halving and binary search preconditions | Compare linear / logarithmic growth |
+| 4 | `n-log-n` | Understand `n log n`, contrast sorting approaches | Compare `n²` vs `n log n` curves |
+| 5 | `input-cases` | Recognize best, average and worst cases and why input matters | Compare explicitly explained model scenarios |
+| 6 | `analyze-code` | Derive complexity from unfamiliar short C++ snippets | Mixed exercises + final assessment |
 
-1. Visit `/`; land on `/learn` with “Начать обучение” and a clear lesson list.
-2. Open lesson 1 (no registration).
-3. Read short, chunked theory and annotated C++ examples.
-4. State a prediction (e.g. what happens to comparisons if `n` doubles).
-5. Run the experiment using real algorithm implementations; chart and table show observations.
-6. Explain the trend or answer a conceptual question.
-7. Solve 2–3 simple tasks that test understanding of code complexity.
-8. See feedback and sources of error. Progress is saved locally, with an obvious next lesson.
+**Important accuracy rules:** Big O is an asymptotic upper bound, not an exact operation count; explain when a bound is not tight. `Θ` is a tight bound, when appropriate. Nested loops are not always quadratic; inspect loop bounds. Binary search assumes sorted input. Theoretical complexity does not imply identical runtime for all implementations. Simulations illustrate growth but cannot prove the exact complexity of an unknown algorithm.
 
-### Journey B — returning learner
+## 6. Exercises and feedback
 
-1. Visit `/learn`; “Продолжить” takes the learner to the last incomplete lesson.
-2. Review a mistaken question and try again, or start the next lesson.
-3. Optionally inspect `/progress` for milestones and recent experiments.
+MVP exercise kinds:
 
-### Journey C — independent investigation
+- Multiple-choice complexity classification of trusted, read-only C++ snippets.
+- Predicting approximate growth when `n` doubles.
+- Interpreting a graph/table and choosing an explanation.
+- Identifying invalid assumptions, such as binary search on an unsorted array.
 
-1. Visit `/lab` directly.
-2. Select **compatible** algorithms (same problem), input distribution, sample sizes and desired metric.
-3. Run the experiment; view chart, numeric results and a concise methodological note.
-4. Toggle between comparison counts and runtime, inspect input assumptions and optionally save the experiment.
-5. Open the relevant lesson when additional explanation is needed.
+Answers are evaluated by deterministic pure functions, with a meaningful explanation after submission. Allow retry. Lesson completion must require submitting key checks, not only navigating through content. No arbitrary C++ execution, AI grading, full online judge, or remote content management system.
 
-## 6. Guided curriculum (MVP: six lessons)
+## 7. Laboratory behavior
 
-All six lessons must share one consistent content model and provide: (a) small theory section, (b) code or reasoning example, (c) prediction, (d) relevant empirical experiment, (e) 2–3 practice questions, (f) answer explanations. Content should be substantial but not a textbook chapter.
+**MVP visualization source:** theoretical functions `1`, `log₂(n)`, `n`, `n·log₂(n)`, and `n²` for positive `n`, optionally with documented scaling for illustration. These are **not real elapsed times or counted operations**.
 
-| Order | Working lesson slug | Key learning objective | Suggested evidence/experiment |
-|---|---|---|---|
-| 1 | `what-is-big-o` | Define `n`, basic operations, asymptotic growth and bounds | Compare operation-count curves for simple linear vs quadratic examples |
-| 2 | `linear-and-quadratic` | Derive `O(1)`, `O(n)` and `O(n²)` for consecutive and nested loops | Compare how operation counts change as `n` doubles |
-| 3 | `logarithmic` | Explain halving and `O(log n)` | Measure linear vs binary search on a sorted array |
-| 4 | `n-log-n` | Understand `O(n log n)` with divide-and-conquer | Bubble sort vs merge sort on identical inputs |
-| 5 | `input-cases` | Distinguish best, typical and worst cases; explain data effects | Insertion sort on sorted, random, reverse-sorted arrays |
-| 6 | `analyze-code` | Analyze unfamiliar short C++ code and distinguish evidence from proof | Mixed code-analysis questions and a final investigative exercise |
+**Controls:** choose a family (sorting or search), one or more comparable algorithms, select a bounded input-size range and point count, change views/metrics only when their meaning is supported. Include reasonable, explained presets.
 
-Important content distinctions:
-- Big O denotes an **asymptotic upper bound**. If teaching common tight growth classes colloquially, explain the distinction from Theta (`Θ`) at an accessible level; avoid falsely claiming that experiments determine a unique mathematical Big O bound.
-- A nested loop does not *always* imply `O(n²)`; iteration bounds must be inspected.
-- Runtime is not identical to step count; constant factors and the browser environment matter.
-- An algorithm with `O(n log n)` may be slower on small `n` than an `O(n²)` one.
-- Binary search requires sorted input; comparing it to linear search on arbitrary unsorted input is invalid.
+**Examples:** Bubble Sort / Insertion Sort / Merge Sort (sorting), Linear Search / Binary Search (search). Algorithm cards describe use, assumptions, relevant theoretical growth and best/average/worst-case distinctions where needed. For model comparisons, label what each curve represents; do not fabricate data-distribution-dependent benchmark results. A choice of random/sorted/reversed input may be omitted until a defensible model or real execution supports it.
 
-### Exercise types (MVP)
+**Outputs:** interactive chart, table, brief interpretation, stated formula/assumptions, clear badge or text such as «Теоретическая модель · не реальные измерения». Saving and reopening experiments is P1; do not mislabel the creation timestamp as a measurement timestamp.
 
-- Predict growth after doubling `n` (multiple choice; answer can be approximate).
-- Determine complexity of short **read-only, trusted C++ snippets** (`O(1)`, `O(log n)`, `O(n)`, `O(n log n)`, `O(n²)`).
-- Interpret an experimental table or graph and give a reasoned answer.
-- Identify hidden assumptions or mistakes (e.g. binary search on an unsorted array).
-
-No execution of arbitrary user-provided code. No full online judge, automatic free-text grading or AI tutor in MVP.
-
-## 7. Free laboratory requirements
-
-### Controls
-
-- Problem family: `sorting` or `search` (must not compare different task families directly).
-- Algorithms: two or more per family where possible; single-algorithm inspection is permitted.
-- Dataset distribution (sorting): random, already sorted, reverse sorted. Use seeded deterministic generation.
-- Array sizes: a bounded sequence (e.g. `50, 100, 250, 500, 1000, 2500, 5000`); avoid heavy `O(n²)` work above a safe cap.
-- Metrics: **element comparisons** (primary for cross-algorithm comparisons within a family) and **elapsed time** (secondary). Consider recording writes separately for sorting, never silently combining unlike operations.
-- Run, cancel, retry and reset.
-
-### First supported algorithm set
-
-- Sorting: `bubbleSort`, `insertionSort`, `mergeSort`.
-- Search: `linearSearch`, `binarySearch`.
-- Additional simple constant/linear/quadratic functions can be used as *trusted educational examples*, not necessarily public lab choices.
-
-Potential post-MVP additions: quicksort, two-sum brute-force vs hash map (with distinct metrics clearly defined), more dataset types.
-
-### Outputs
-
-- Line chart of measurement vs input size with axes, units, legend and accessible data table.
-- Table including algorithm, `n`, counted comparisons, measured duration, and repetition metadata.
-- User-friendly explanation of selected algorithm(s), assumptions and theoretical expected growth.
-- Explain that measured duration may be noisy; surface the number of repetitions.
-- Save a **bounded summary** of a completed experiment to local storage. Allow reopen and delete.
-- Present loading/progress, cancellation and meaningful error states.
-
-### Measurement integrity and methodology
-
-- Execute actual algorithm implementations against generated input arrays, not `n²`/`n log n` formula outputs masquerading as experiments.
-- Generate datasets deterministically using an explicit seed, and give **identical source data** to algorithms compared at the same `n` and trial (clone before mutation).
-- Compare algorithms only if input preconditions and output semantics are equivalent. For binary search, datasets **must be sorted** and target-choice rules consistent. Clearly explain that any preprocessing/sorting cost is excluded from the benchmark unless a separate end-to-end scenario explicitly includes it.
-- Instrument comparison counts with a precisely defined shared counting convention; verify counts in tests.
-- Prefer **separate executions** for comparison-count instrumentation and runtime measurement, since counting overhead changes elapsed time.
-- Benchmark in a Web Worker when supported so the UI stays responsive. Use bounded input sizes, repetition counts and cancellation to avoid long hangs.
-- For time measurements, use `performance.now()`, warm-up runs when appropriate, several repeated measurements and the **median**; describe device/browser dependencies.
-- Exclude data generation, graph rendering and UI updates from algorithm timing.
-- Avoid precise claims about asymptotic complexity based only on finite benchmark curves.
-- Do not conflate a sample's median measured time with a worst-case complexity bound.
+**Later (not MVP):** a real benchmark engine, actual instrumented algorithm runs, input generation, repeated timing, validation, Web Workers if truly necessary. The educational laboratory must be structured to swap data sources without redoing charts.
 
 ## 8. Progress and persistence
 
-MVP uses local browser persistence; no user account or cloud sync.
+- Store last visited lesson/step, completed lessons, exercise outcomes, and optionally saved simulation configurations/results.
+- Local browser storage only; no account or syncing.
+- Handle empty, invalid and outdated persisted values, and offer deletion/reset.
+- Keep storage bounded and do not save huge generated arrays.
+- Be transparent that progress is stored in the current browser only.
 
-Store (versioned schema):
-- Lesson completion and latest viewed lesson.
-- Exercise attempts and latest/success states (not just a global points counter).
-- Recent saved experiments: metadata, seed, algorithm IDs, input configuration, results, timestamp and measurement schema version.
+## 9. Priorities and scope
 
-Storage expectations:
-- Gracefully handle missing/blocked/corrupted local storage.
-- Enforce a modest retention limit for experiments and avoid storing raw large arrays.
-- Explicitly communicate that data is saved **in this browser**, not synced across devices.
-- Provide a way to clear locally stored learning data with confirmation.
+**P0:** usable app layout; curriculum navigation; one end-to-end lesson then six lessons; pure model generator; free lab with real interactive inputs, correctly labeled theoretical charts/tables; deterministic exercise checking; local lesson progress; accessible, responsive experience.
 
-## 9. Interaction, content and visual design
+**P1:** saved explorations; review of mistakes; deeper unknown-algorithm classification exercises; polishing progress reports.
 
-- Language: **Russian throughout the product** (UI, lessons, tooltips, validation, exercise feedback).
-- A minimal, practical, developer-tool visual identity: off-white/white canvas, dark readable text, one restrained accent, distinct accessible chart colors.
-- Clear hierarchy and compact navigation; no promotional landing, hero animation, parallax or decorative gradients.
-- Reuse an accessible component set and tokens; consistent spacing, typography and border radii.
-- Mobile support: controls wrap/stack, chart has responsive dimensions and a usable data-table alternative.
-- Graphs cannot be the only representation of results; include labeled tables and text interpretation.
-- Keyboard-friendly forms, accessible labels, visible focus, semantic landmarks, adequate contrast and reduced-motion compliance.
-- Code samples use C++ first because this product targets beginner algorithms/competitive programming. Their language is clearly labeled.
-- Avoid giving away exercise answers before submission; explain errors after the attempt.
+**P2:** CSV/PDF export, more algorithm families, optional real-measurement mode.
 
-## 10. Functional acceptance criteria
+**Out of scope for MVP:** authentication, backend/API/database, arbitrary user code, Web Workers, real execution benchmarking, generated fake timings, marketing landing pages, elaborate animation and gamification.
 
-1. A newcomer can begin lesson 1 without login, reach a real experiment and finish practice.
-2. Completing or partially finishing a lesson survives page refresh/reopening on the same browser.
-3. Guided experiments require a hypothesis before revealing results when the lesson specifies it.
-4. The lab compares bubble/insertion/merge using the **same arrays** for each `n` and trial; inputs are deterministic for the same seed.
-5. Sorting algorithms return correctly sorted results, and binary search behaves correctly on sorted inputs and missing values.
-6. Measured comparison counts come from actual execution and are validated on small hand-checkable arrays.
-7. Time measurement uses repeated runs (median); there are no fake data points represented as real benchmarks.
-8. A long running experiment can be cancelled; the UI stays usable, and experiment errors do not crash the app.
-9. An attempt to compare incompatible algorithms is prevented or guided into a compatible experiment.
-10. Every lesson has an independent competency check, not just a “read” completion switch.
-11. Local progress survives refresh. If P1 experiment saving is implemented, saved experiments can be reopened and removed; corrupted storage never breaks boot.
-12. Production build deploys to Vercel and core flows work without any server credentials.
+## 10. Acceptance criteria
 
-## 11. Outcome measures (for evaluation, not fabricated targets)
+1. A new visitor can learn without registration and reach a working lesson within one click from `/learn`.
+2. At least one end-to-end lesson is built and tested before expanding to all six.
+3. A user can change valid lab settings and see consistent data, chart and explanation updates.
+4. The same configuration always generates the same model points.
+5. All charts explicitly distinguish theoretical simulation from real measurement.
+6. A user can answer a C++ complexity question and obtain accurate feedback.
+7. Progress persists after refresh within the same browser.
+8. Wrong inputs and corrupted stored data fail gracefully.
+9. Every section works on desktop and mobile and keyboard interaction is possible.
+10. `pnpm lint`, `pnpm typecheck`, `pnpm test`, and `pnpm build` succeed (or blockers are documented honestly).
 
-- **Learning:** pre-/post-test on comparable tasks assessing ability to determine and explain complexity. Report sample size, test difficulty, average/median change, limitations and avoid claiming causation without adequate design.
-- **Task completion:** can a learner finish one full lesson without external instructions?
-- **Comprehension:** can a learner explain why a chosen graph shape is plausible and why a finite graph is not a proof?
-- **Reliability:** algorithm test pass rate; experiment completion without freezes; reproducible datasets.
-- **Return usefulness:** can learners resume an unfinished lesson and repeat old exercises without rebuilding context?
+## 11. School research and evaluation
 
-## 12. Priorities
+**Project goal:** build an interactive tool for learning and explaining asymptotic time complexity.
 
-### P0 — ship first
+**Research hypothesis:** combining theory, model-based exploration and practical exercises may improve understanding compared with theory-only learning. Assess using pre-/post-tests with comparable questions, report sample size, method and limitations; never invent an educational effect.
 
-- Responsive app shell and three sections.
-- Real measurement engine and five algorithms.
-- Free lab with reproducible experiments, count chart, timing chart and result table.
-- Six guided lessons with theory, hypotheses, appropriate experiments and questions.
-- Exercise feedback and persistent lesson progress.
-- Error/loading/cancel states and automated correctness tests.
+**Methodological limitation:** MVP charts visualize mathematical complexity models and are not empirical benchmark measurements. To substantiate claims of *experimental analysis of actual algorithms*, implement and document a real-measurement module before final school evaluation, or adjust the project title/claims to emphasize *interactive modeling of algorithmic complexity*.
 
-### P1 — after P0 is reliable
+## 12. Delivery milestones
 
-- Saved experiments and history (the `/progress` view must still exist without history).
-- “Identify the unknown complexity” challenge built from real generated results.
-- Retry incorrectly answered questions; clearer progress analytics.
+M0 — Existing repository setup, routing, adapted FSD, validation scripts, minimal shell.  
+M1 — Typed models and deterministic model functions with unit tests.  
+M2 — `/lab` configuration, model charts, tables and explanation.  
+M3 — First complete theory → prediction → visualization → practice lesson.  
+M4 — Remaining lessons using the same lesson engine.  
+M5 — Progress/history, polish, accessibility and Vercel deployment.  
+M6 (optional, later) — Real computational experiments with proper methodology.
 
-### P2 — nice-to-have
-
-- CSV export, optional report generation.
-- Additional algorithms or alternate content language.
-- Data export/import between browsers.
-
-### Non-goals / prohibited scope creep
-
-- Authentication, payments, database, social feeds, streaks, leaderboard, notification spam.
-- Arbitrary execution of submitted C++/JS code.
-- Heavy algorithm-step animations, complex custom visualization engines.
-- Full online judge, personalized AI tutoring, server-side benchmarking.
-- Backend/API work without explicit new product requirements.
-
-## 13. Delivery milestones
-
-**M0 — Foundation:** Next.js + TypeScript + pnpm + Tailwind + Biome, App Router shell, routes, reusable design tokens, local deployment readiness.
-
-**M1 — Scientific engine:** deterministic generators, algorithm implementations, counting conventions, worker protocol, reliable timing, cancellation, unit tests.
-
-**M2 — Free lab:** controls, responsive results chart/table, states and notes. Verify against actual measured results.
-
-**M3 — Vertical slice:** one *complete* guided lesson from theory through hypothesis, lab and graded exercises; persistence tested.
-
-**M4 — Curriculum:** remaining five lessons using the same authoring schema; progress view; accessibility checks.
-
-**M5 — Quality and research:** tests, build, live Vercel deployment, prepare pre/post learning evaluation and project-defense demonstration.
-
-Do not start M4 until M3 is genuinely usable. Keep `architecture.md` in sync with any intentional architectural change.
-
-## 14. Definition of done for the school project
-
-A learner can complete the course, independently classify the complexity of simple C++ algorithms, explain empirical growth trends, and operate the laboratory to investigate equivalent algorithms. Results are genuinely measured, limitations are disclosed, and the product works publicly on Vercel without a login.
-
----
-
-**Single-sentence decision test:** Does this change help a beginner **understand, investigate or independently analyze Big O**? If not, it is probably outside MVP scope.
+The product is successful when a learner can **independently determine and explain** the Big O of simple unfamiliar code, and use visual models appropriately without confusing them with measured performance.

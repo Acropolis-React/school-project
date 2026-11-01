@@ -1,350 +1,271 @@
-# AlgoLab — Technical Architecture
+# AlgoLab — Architecture
 
-> Target architecture / initial blueprint. This document describes **intended** modules, not necessarily files that already exist. Keep it updated as implementation evolves.
+> **Status:** Target architecture for an existing initialized repository. Do not reinitialize the project, rewrite its history, or move the existing `src/app` directory.
+>
+> **Source of product requirements:** `product.md`. This file defines technical boundaries and implementation rules. The initial MVP uses explicitly labeled theoretical simulations; see `product.md` for requirements and `AGENTS.md` for Codex rules.
 
-## 1. Technology decisions
+## 1. Technology and scope
 
-| Concern | Choice | Why |
-|---|---|---|
-| Framework | Next.js (current stable), **App Router** | Easy deployment on Vercel; well-defined routes and component boundaries |
-| Frontend | React, TypeScript (`strict`) | Typed UI and domain logic |
-| Styling | Tailwind CSS (current supported release) | Fast, consistent utility styling and responsive design |
-| Charts | Recharts | Accessible chart + separate tabular representation |
-| UI primitives | Small in-project components | Avoid a full heavyweight design-system dependency |
-| Package manager | pnpm | Reproducible workspace and scripts |
-| Lint / format | Biome | Fast consistent checks; `pnpm lint` |
-| Testing | Vitest + Testing Library as needed | Tests for algorithms, benchmark helpers, lesson state, UI interactions |
-| Worker | Browser Web Worker | Keep expensive algorithms off the main UI thread |
-| Persistence | Local storage (versioned and validated) | No authentication/backend required in MVP |
-| Hosting | Vercel | Simple Next.js deployment |
+| Area | Decision |
+| --- | --- |
+| Framework | Next.js App Router (`src/app`) |
+| Language | TypeScript (strict mode) |
+| UI | React, Tailwind CSS |
+| Charts | Recharts |
+| Architecture | Feature-Sliced Design (adapted naming for Next.js) |
+| Package manager | pnpm |
+| Validation | Biome (`pnpm lint`), TypeScript (`pnpm typecheck`), tests/build when configured |
+| Initial data source | Typed deterministic simulation fixtures |
+| Persistence | Browser localStorage for learning progress |
+| Deployment | Vercel |
 
-No backend, API routes or database is planned for MVP. The product can run without credentials or secrets. Use standard Vercel **Next.js deployment** first; do not force `output: 'export'` unless there is a specific need for static hosting and all routes are verified compatible. Static-only rendering is an architectural goal but not a requirement for Vercel.
+The initial milestone is a **working educational UI**, with guided lessons, exercises, a laboratory interface, and charts using clearly labeled simulated data. No dedicated backend, database, authentication, Web Worker, arbitrary code execution, or server-side benchmarking is required in this milestone.
 
-Pin actual dependency versions in `pnpm-lock.yaml` once initialized. Use only stable versions supported by each other, rather than assuming versions in this blueprint are current.
+The long-term learning goal remains understanding Big O through theory, hypotheses, practical tasks, and (eventually) actual computation. Simulated numbers are **not empirical measurements** and must never be represented as such.
 
-## 2. Canonical directory structure
+## 2. Adapted FSD layers
 
-**Use `src/app`, never root `app`. Never introduce a folder named `src/pages` or `pages`, even as a generic UI module.** That name conflicts with Next.js routing conventions in mixed setups.
+Next.js already owns `src/app` for App Router, so do **not** create an additional FSD app layer. Rename the usual FSD page layer to `views`, and put global providers and configuration in `providers`.
+
+```text
+src/app          Next.js App Router: route entry points, layouts, metadata
+src/providers    Global providers, global styles, application setup
+src/views        FSD page-level composition (equivalent to FSD pages)
+src/widgets      Large reusable compositional UI blocks
+src/features     User actions and use cases
+src/entities     Domain models, domain content, domain presentation
+src/shared       Domain-independent utilities and UI primitives
+```
+
+`src/app` and `src/providers` are application composition boundaries, not ordinary domain slices. They may import `views`, `widgets`, `features`, `entities`, and `shared`. Other layers must never import from `app` or `providers`.
+
+**Allowed dependencies among sliced layers:**
+
+```text
+views → widgets → features → entities → shared
+```
+
+A higher layer can also directly import *any* lower layer; intermediate imports are not required. Never import upward. Do not directly import between separate slices of the same layer. Within one slice, internal imports are permitted.
+
+The naming is intentionally adapted FSD; do not attempt to install a second router or create `src/pages`, `src/_pages`, `src/_app`, or a root-level `app` directory.
+
+## 3. Target file structure
 
 ```text
 algolab/
+├── public/
+├── src/
+│   ├── app/                              # Next.js App Router, keep existing location
+│   │   ├── layout.tsx                    # Uses providers / global styles
+│   │   ├── page.tsx                      # Entry page or redirect to /learn
+│   │   ├── learn/
+│   │   │   ├── page.tsx                  # Thin adapter -> views/learn
+│   │   │   └── [slug]/page.tsx           # Thin adapter -> views/lesson
+│   │   ├── lab/page.tsx                  # Thin adapter -> views/lab
+│   │   └── progress/page.tsx             # Thin adapter -> views/progress
+│   ├── providers/
+│   │   ├── ui/                            # Global client providers only when required
+│   │   └── styles/globals.css             # Global Tailwind styles/theme
+│   ├── views/
+│   │   ├── learn/
+│   │   │   ├── ui/learn-view.tsx
+│   │   │   └── index.ts
+│   │   ├── lesson/
+│   │   │   ├── ui/lesson-view.tsx
+│   │   │   └── index.ts
+│   │   ├── lab/
+│   │   │   ├── ui/lab-view.tsx
+│   │   │   └── index.ts
+│   │   └── progress/
+│   │       ├── ui/progress-view.tsx
+│   │       └── index.ts
+│   ├── widgets/
+│   │   ├── app-navigation/
+│   │   │   ├── ui/app-navigation.tsx
+│   │   │   └── index.ts
+│   │   ├── experiment-workspace/         # Only if shared across lab and lessons
+│   │   │   ├── ui/experiment-workspace.tsx
+│   │   │   └── index.ts
+│   │   └── lesson-workspace/             # Only if justified by reuse
+│   ├── features/
+│   │   ├── configure-experiment/
+│   │   │   ├── model/
+│   │   │   ├── ui/
+│   │   │   └── index.ts
+│   │   ├── run-experiment/
+│   │   │   ├── model/                     # Interface to experiment data provider
+│   │   │   ├── lib/                       # Mock-backed implementation for MVP
+│   │   │   └── index.ts
+│   │   ├── answer-exercise/
+│   │   │   ├── lib/                       # Pure answer validation
+│   │   │   ├── ui/
+│   │   │   └── index.ts
+│   │   └── track-lesson-progress/
+│   │       ├── model/
+│   │       └── index.ts
+│   ├── entities/
+│   │   ├── algorithm/
+│   │   │   ├── model/                     # IDs, metadata, complexity and limitations
+│   │   │   └── index.ts
+│   │   ├── experiment/
+│   │   │   ├── model/                     # Config, result, series and status types
+│   │   │   ├── lib/                       # Typed simulated datasets
+│   │   │   ├── ui/                        # Charts/results if domain-reusable
+│   │   │   └── index.ts
+│   │   ├── lesson/
+│   │   │   ├── model/                     # Lesson/exercise schemas
+│   │   │   ├── content/                   # Russian educational content
+│   │   │   └── index.ts
+│   │   └── learning-progress/
+│   │       ├── model/
+│   │       ├── lib/                       # Versioned local persistence
+│   │       └── index.ts
+│   └── shared/
+│       ├── ui/                            # Generic accessible controls
+│       ├── lib/                           # Generic helpers/storage utilities
+│       ├── config/                        # Shared application constants
+│       └── types/
 ├── AGENTS.md
 ├── architecture.md
 ├── product.md
-├── README.md
-├── biome.json
-├── next.config.ts
 ├── package.json
 ├── pnpm-lock.yaml
-├── tsconfig.json
-├── public/
-│   └── ...static-assets
-└── src/
-    ├── app/                         # Next.js App Router ONLY
-    │   ├── layout.tsx               # Global shell, fonts, metadata
-    │   ├── globals.css              # Global tokens and Tailwind
-    │   ├── page.tsx                 # Redirect to /learn
-    │   ├── learn/
-    │   │   ├── page.tsx             # Curriculum overview
-    │   │   └── [slug]/page.tsx      # One lesson by slug
-    │   ├── lab/page.tsx             # Free lab page
-    │   └── progress/page.tsx        # Learning progress and saved runs
-    ├── features/                    # User-facing flows / interactions
-    │   ├── guided-learning/
-    │   │   ├── ui/                  # Lesson runner and steps
-    │   │   ├── model/               # Lesson progression logic
-    │   │   └── index.ts
-    │   ├── experiment-lab/
-    │   │   ├── ui/                  # Configuration, charts, table
-    │   │   ├── model/               # Experiment state and orchestration
-    │   │   └── index.ts
-    │   ├── exercise-checker/
-    │   │   ├── ui/                  # Questions and feedback
-    │   │   ├── model/               # Pure answer evaluation
-    │   │   └── index.ts
-    │   └── progress-tracking/
-    │       ├── ui/
-    │       ├── model/               # Persistence facade / selectors
-    │       └── index.ts
-    ├── entities/                    # Domain concepts, no feature imports
-    │   ├── algorithm/
-    │   │   ├── model/               # Algorithm metadata, registry, types
-    │   │   ├── lib/                 # Pure reference implementations
-    │   │   └── index.ts
-    │   ├── benchmark/
-    │   │   ├── model/               # Config, results, worker protocol
-    │   │   ├── lib/                 # Data generators, statistics, validation
-    │   │   ├── ui/                  # Shared domain-specific result display
-    │   │   ├── worker/              # Worker entry and execution helpers
-    │   │   └── index.ts
-    │   └── lesson/
-    │       ├── model/               # Lesson, step, exercise types
-    │       ├── content/             # All six Russian lesson definitions
-    │       └── index.ts
-    └── shared/
-        ├── ui/                      # Button, Input, Card, Tabs, etc.
-        ├── lib/                     # Generic utilities; no domain coupling
-        ├── hooks/                   # Truly generic client hooks
-        ├── config/                  # Storage schema version, limits, tokens
-        └── types/                   # Generic shared types, if genuinely shared
+└── tsconfig.json
 ```
 
-The structure is intentionally **FSD-inspired, not strict ceremony**. Create directories as code is needed, not all placeholder files upfront. Keep feature internals private and expose stable functions/components through `index.ts` when used across modules.
+This is a **responsibility map**, not a command to create all directories at once. Create folders and `index.ts` public APIs only when functionality exists. Keep the repository's already working configuration and existing conventions where compatible.
 
-### Import direction
+### Layer responsibilities
+
+- **`app`:** Route declarations, Next.js layouts, metadata, error/loading boundaries; thin imports of `views`. No algorithm or exercise logic.
+- **`providers`:** Global providers, global CSS, app initialization. Avoid global state unless necessary.
+- **`views`:** Complete route-level screens, composition of features/widgets/entities and screen-specific layout.
+- **`widgets`:** Substantial composed blocks reused between screens (for example lesson and lab experiment workspace). Not a dumping ground for every component.
+- **`features`:** User interactions such as configuring experiments, requesting results, submitting answers, updating progress.
+- **`entities`:** Algorithms, experiments, lessons, exercises and progress as domain concepts; schemas, fixed data, domain-specific UI.
+- **`shared`:** Accessible buttons, inputs, cards, formatting utilities, generic storage helpers, design tokens.
+
+Each slice should expose a public API via `index.ts`. Import other slices through their public APIs rather than deep paths; inside a slice, relative imports are allowed. Configure alias `@/*` to point at `src/*` if not already configured.
+
+## 4. Runtime behavior — MVP
 
 ```text
-src/app  ─────→ src/features ─────→ src/entities ─────→ src/shared
-    │                                  │
-    └──────────────────────────────────┘
+User selects lesson or opens laboratory
+          ↓
+Next.js route (src/app)
+          ↓
+FSD view (src/views)
+          ↓
+Feature interaction (configure/run/answer)
+          ↓
+Typed experiment data source (simulated for MVP)
+          ↓
+Recharts plot + tabular data + educational explanation
+          ↓
+Optional local progress update
 ```
 
-- `app`: routes, layouts and composition; no algorithms or benchmark logic.
-- `features`: use-case orchestration and UI. May import domain entities and shared modules.
-- `entities`: algorithm implementations, benchmark schemas, lesson content; must not import features.
-- `shared`: generic presentation/utils, must not import domain modules.
-- Avoid feature-to-feature dependencies and cycles. If guided lessons and the free lab need the same result view or experiment controls, extract reusable domain-specific display into `entities/benchmark/ui` (or generic controls into `shared/ui`) and compose them at the appropriate level; do not make `guided-learning` import `experiment-lab`.
+### Experiment data source
 
-## 3. Runtime boundaries and data flow
-
-Next.js renders routes and static content; interactive lesson/lab components are Client Components. Benchmark execution happens in a browser Web Worker.
-
-```text
-Learner (browser)
-       │
-       ▼
-App Router page / Client Component
-       │
-       ├── Guided-learning flow ──→ Lesson registry and question evaluation
-       │                                  │
-       │                                  └──→ Progress persistence (browser)
-       │
-       └── Experiment-lab UI
-                  │ run(config)
-                  ▼
-          Experiment orchestrator
-                  │ typed messages
-                  ▼
-            Web Worker
-                  │
-                  ├── seeded dataset generator
-                  ├── clone equivalent inputs per algorithm
-                  ├── algorithm correctness validation
-                  ├── instrumented comparison-count trials
-                  └── separately timed repeated trials
-                  │
-                  ▼
-          Typed results / errors
-                  │
-                  ▼
-          chart + accessible table + interpretation
-```
-
-### Worker integration
-
-- Worker code must not import React/UI/Next server modules.
-- Prefer TypeScript module worker built from a URL that the Next.js bundler actually supports. **Verify `next dev` and `next build`**, including deployment; do not assume a Web Worker integration works without testing.
-- Define a discriminated union for worker messages: `run`, `progress`, `result`, `error`, `cancel` (and optionally `ready`). Include `requestId` to ignore stale messages.
-- Cancellation must be robust: a worker occupied by synchronous CPU work may not process a queued cancel message until the loop ends. Prefer **terminating the active worker** on cancel and spawning a fresh one when needed, or cooperative chunking with explicit yielding. Always clean up workers on unmount.
-- Enforce reasonable `n`, trial-count and total-work limits before worker dispatch and inside worker handling.
-- Workers are client-only; instantiate from a user action or client effect, never at module top level during SSR.
-
-## 4. Domain models (illustrative interfaces)
-
-These are contracts to implement, refine and test, **not claims of existing types**.
+Define an interface / function contract independent of implementation, for example:
 
 ```ts
-export type ProblemFamily = "sorting" | "search";
-export type InputDistribution = "random" | "sorted" | "reversed";
-export type ExperimentMetric = "comparisons" | "timeMs";
-
-export interface AlgorithmDefinition {
-  id: string;
-  titleRu: string;
-  family: ProblemFamily;
-  expectedComplexity: string; // presentation only; never a fake benchmark formula
-  requiresSortedInput?: boolean;
-  descriptionRu: string;
-}
-
-export interface ExperimentConfig {
+type ExperimentConfig = {
   algorithmIds: string[];
-  family: ProblemFamily;
-  inputDistribution: InputDistribution;
-  sizes: number[];
-  seed: number;
-  repetitions: number;
-  targetPolicy?: "present" | "missing"; // search only
-}
+  datasetKind: "random" | "sorted" | "reversed";
+  minSize: number;
+  maxSize: number;
+  samples: number;
+  metric: "operations" | "time";
+};
 
-export interface Measurement {
-  algorithmId: string;
+type ExperimentPoint = {
   inputSize: number;
-  comparisons: number;    // explicitly defined count, not time
-  medianTimeMs: number;  // median of valid timing repetitions
-  repetitions: number;
-}
+  value: number;
+};
 
-export interface ExperimentResult {
-  schemaVersion: number;
-  config: ExperimentConfig;
-  measurements: Measurement[];
-  measuredAt: string;
-  environmentNoteRu: string;
-}
+type ExperimentSeries = {
+  algorithmId: string;
+  points: ExperimentPoint[];
+};
 
-export type ExerciseKind = "complexity-choice" | "growth-prediction" | "interpretation";
-
-export interface Exercise {
-  id: string;
-  kind: ExerciseKind;
-  promptRu: string;
-  optionsRu: Array<{ value: string; label: string }>;
-  correctValue: string;
-  explanationRu: string;
-  codeCpp?: string;
-}
-
-export interface LessonDefinition {
-  id: string;
-  slug: string;
-  titleRu: string;
-  order: number;
-  /** Typed ordered theory, hypothesis, experiment and quiz steps. */
-  steps: LessonStep[];
-}
+type ExperimentResult = {
+  source: "simulation" | "measurement";
+  metric: "operations" | "time";
+  series: ExperimentSeries[];
+};
 ```
 
-`LessonStep` should be a discriminated union created when implementing the first fully functional lesson. Keep lesson content structured, not hardcoded directly into `page.tsx`. Store pure answer evaluation separately from React components.
+These are conceptual shapes; refine them only when a real implementation requires it. The view should not know whether results come from simulated data or from a future benchmarking engine. Keep data-provider decisions in `features/run-experiment`, and typed experiment data/models in `entities/experiment`.
 
-## 5. Algorithm and measurement rules
+**Simulation rules:**
 
-### Algorithm ownership
+1. Start with deterministic, internally consistent data shaped by known growth functions, e.g. `n`, `n * log2(n)`, and `n * n`. The coefficient/scaling is illustrative, not a measured hardware constant.
+2. Honor the selected algorithms, metric, data distribution, input-size range and sample count when those controls are exposed; otherwise explicitly disable or hide unsupported controls.
+3. Do not generate a visually convincing but arbitrary curve disconnected from selected controls. Avoid random noise unless deliberately and reproducibly modeled.
+4. Clearly label plots and exports **«Демонстрационные данные»** or **«Модельные значения»**. State that this is a mathematical illustration, not a benchmark of the user's device.
+5. Never claim real runtime, operation counts, repetitions, device comparisons, or statistically observed performance when values are synthetic.
+6. For the MVP, prefer modeled **relative operations / abstract units**. Do not present synthetic milliseconds as real latency; a time metric should be marked as estimated/model-based or disabled until implemented.
+7. Lessons may use illustrative examples, but distinguish theoretical upper bounds, exact instrumented counts, and model curves. Big O characterizes asymptotic growth, not a guarantee about exact measured timing.
 
-- `entities/algorithm/lib`: reference implementations and instrumented variants or injected counters, with correctness tests.
-- `entities/algorithm/model`: registry provides **metadata, allowed family, preconditions and intended complexity**, not synthetic data.
-- `entities/benchmark/lib`: seeded generator, input cloning, validity checks, median/statistics, bounds.
-- `entities/benchmark/worker`: execution only; returns typed results; should not hold UI state.
+This approach enables frontend validation without premature worker/benchmarking complexity. **Before claiming the project experimentally measured real algorithms**, implement and validate a genuine measurement mode.
 
-### Primary metric: element comparisons
+### Future real-measurement phase (not MVP)
 
-Use a clearly documented convention **within each family**. For sorting, count comparisons between array elements used to determine ordering. For search, count comparisons between candidate elements and target values. Avoid describing the result as a universal CPU instruction count. Record assignments/writes separately if needed; do not compare unlike metrics silently.
+The data-provider contract must allow a later implementation that executes trusted TypeScript algorithms, counts explicitly defined operations, and measures actual elapsed time. Begin with bounded, synchronous browser execution for small safe inputs if adequate; add a dedicated Web Worker only when expensive runs or responsiveness require it. Preserve the same chart and lesson UI. Use seeded identical inputs for fair comparisons, repetitions for time measurements, correctness checks, input constraints and a cancellation mechanism.
 
-Count-specific runs and time-specific runs should be separate, so instrumentation does not distort the primary runtime results. Use small manually verifiable arrays in unit tests; actual counts may depend on algorithm details and data distributions.
+Do not create Web Worker files, messaging protocols, RPC wrappers, fake progress bars, or complex concurrency orchestration now.
 
-### Timing protocol
+## 5. Lessons and exercises
 
-For each `n`, algorithm and repetition:
-1. Generate a fixed input for that `n` and trial using a seeded PRNG; share the source data across compared algorithms.
-2. Clone input before any in-place algorithm mutates it.
-3. Validate output correctness (sorted output, valid search index or `-1` as appropriate).
-4. Warm up timing code as appropriate.
-5. Measure **algorithm execution only** with `performance.now()`; exclude input construction and UI rendering.
-6. Collect several repeated time values and calculate a median.
-7. Present count series and median-time series separately, including labels/units.
+- Lesson content is **Russian-language structured data** under `entities/lesson/content`, not hard-coded repeated page JSX.
+- Use a reusable lesson renderer: introduction, concise theory, code examples, prediction, experiment, explanation, and 2–3 practice questions.
+- C++ code snippets are read-only learning examples; compiling/executing user code is out of scope.
+- Answer evaluation uses pure, unit-testable functions; show explanations after a response. Do not present a multiple-choice guess as a mathematical proof.
+- An experiment embedded in a lesson should reuse the same configuration/result contracts as the free laboratory.
+- Keep lessons and free laboratory connected but usable independently.
 
-Exact data generation, target policy and repeat/aggregation policy must be recorded in result metadata. Never display hardcoded curves as actual measurements. Web runtime results are environment-sensitive; experiment reproducibility refers to **input generation and protocol**, not identical milliseconds on all devices.
+## 6. Progress persistence
 
-### Guardrails
+- Save completion state and answered-exercise outcomes in localStorage; do not require login.
+- Access browser-only APIs exclusively from client-side code.
+- Use a versioned schema/key, validate parsed payloads and recover gracefully from corrupted or missing data.
+- Do not treat progress saved in localStorage as portable across devices.
+- Avoid persisting huge charts or input arrays; save compact settings and results only if history is explicitly implemented.
 
-- Use bounded and validated sizes, especially for quadratic algorithms.
-- Handle long tasks with cancellation, runtime limit and helpful user feedback.
-- Keep raw large input arrays out of saved results.
-- No user-submitted code execution; all algorithms are trusted, compiled application code.
-- Do not fit Big O classes automatically in MVP and claim certainty. Display theoretical complexity separately from observations.
+## 7. UI / UX rules
 
-## 6. Lesson engine
+- Russian-only user-facing interface and course content.
+- The first useful screen should be reachable immediately; **no marketing landing page**.
+- Keep the UI neutral, responsive, accessible, and restrained: clear typography, compact navigation, simple cards, functional charts.
+- No decorative motion, fake dashboards, unnecessary gradients, intrusive modals, gamification streaks, or artificial onboarding.
+- Charts need labels, units, meaningful legends, a corresponding results table, and explicit synthetic/real provenance.
+- Preserve keyboard navigation, focus visibility, reasonable contrasts, and empty/error states.
+- Prefer Server Components for static route composition and the narrowest possible Client Components for interactive controls or localStorage.
 
-A lesson is structured data containing an ordered sequence of typed steps. Suggested step types:
+## 8. Testing and completion criteria
 
-```ts
-type LessonStep =
-  | { type: "theory"; id: string; titleRu: string; body: StructuredTheory }
-  | { type: "hypothesis"; id: string; question: Exercise }
-  | { type: "experiment"; id: string; preset: ExperimentConfig; guidanceRu: string }
-  | { type: "reflection"; id: string; question: Exercise }
-  | { type: "quiz"; id: string; exercises: Exercise[] };
-```
+At minimum verify:
 
-This is pseudocontract: design `StructuredTheory` as simple safe local content (plain text/paragraphs/code samples); avoid adding MDX/remote CMS until necessary.
+- Every route resolves without errors and navigation works.
+- Each supported lesson renders and exercises validate answers correctly.
+- Experiment configuration changes cause appropriate deterministic series updates.
+- Invalid sizes/empty selections are handled rather than producing broken charts.
+- No chart claims simulated data are measured data.
+- Progress survives reload and malformed localStorage data does not crash the app.
+- Mobile and desktop layouts remain usable.
 
-- The lesson runner reads by slug, validates step ordering, tracks progress, supports back/next and prevents accidental answer reveal before submission.
-- Experiments in lessons reuse the **same engine and UI primitives** as the free lab, but load a preset and include a learning prompt.
-- Users may revisit previous lessons; do not globally lock routes.
-- Completion requires some demonstration of understanding, not merely viewing content.
-- Quiz data is bundled with the app; answer checker is pure, independently testable logic.
+Before declaring a coding task complete, run the scripts that exist in the repository, especially `pnpm lint` and `pnpm typecheck`, then `pnpm test` and `pnpm build` where configured. Report any commands that could not run. Do not invent successful test results.
 
-## 7. State and persistence
+## 9. Development order
 
-- Keep transient UI state (selected algorithms, field edits, worker lifecycle) near the owning feature via React state/hooks.
-- Avoid global Zustand/Redux by default; introduce a store only if meaningful cross-route state becomes complex.
-- Persist progress/results through a single explicit `progress-tracking` facade; do not scatter direct `localStorage` calls across components.
-- Prefer versioned JSON records with parsing/validation and graceful migrations/defaults.
-- No browser persistence access during SSR. Hydrate client-only state after mount and avoid hydration mismatch.
-- Impose a limit on saved runs (for example 20–50) and keep data small. Provide delete/clear actions.
-- Persistence in MVP is local to the current browser/profile; it is not an account.
+1. Inspect existing repository and preserve initialization/commits.
+2. Establish adapted FSD folders and route adapters in the existing `src/app`.
+3. Implement shared minimal UI and navigation.
+4. Implement typed algorithm metadata, lesson content schema and one complete lesson.
+5. Implement the mock-backed experiment contract and functional lab charts/table with transparent labeling.
+6. Connect experiments inside lessons, exercises and progress persistence.
+7. Complete the planned lesson set, test behavior, refine UX and deploy to Vercel.
+8. **Later, optional:** replace simulation with actual instrumented execution; only add Web Workers if they solve demonstrated responsiveness problems.
 
-## 8. Styling and accessibility
-
-- Neutral surface palette, clear typography (e.g. Inter or system UI), restrained accent, consistent spacing and modest border radii.
-- Build a compact layout first; no decorative landing screen.
-- Reusable components in `shared/ui` should have accessible focus and semantic markup.
-- All charts have axes, units, legend and a **separate usable table**; important insights must also exist as text.
-- Responsive controls and data tables must work on small screens (scrolling tables is acceptable if labeled).
-- Respect `prefers-reduced-motion`; default to no complex animation.
-
-## 9. Package scripts and tests
-
-Intended scripts in `package.json`:
-
-```json
-{
-  "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "biome check .",
-    "format": "biome check --write .",
-    "typecheck": "tsc --noEmit",
-    "test": "vitest run",
-    "test:watch": "vitest"
-  }
-}
-```
-
-Use co-located `*.test.ts` / `*.test.tsx` where sensible. Minimum tests:
-
-1. Sorting output correctness over edge cases, duplicates and distributions.
-2. Linear/binary search results on sorted datasets, existing and missing targets.
-3. Operation count on hand-checkable small inputs.
-4. Seeded generation reproducibility and fair comparison input equivalence.
-5. Statistics / median computation, bound validation and invalid config rejection.
-6. Pure answer evaluation and lesson progression.
-7. Browser worker cancellation/progress integration in a testable harness or manual smoke test when automation is impractical.
-8. Route smoke test: `/learn`, `/learn/<slug>`, `/lab`, `/progress`.
-
-Note: Worker integration and chart behavior must also be manually checked in a real browser; unit tests alone do not guarantee bundler compatibility.
-
-Before finishing a task, run `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm build`, as mandated in `AGENTS.md`, and report any failures honestly.
-
-## 10. Deployment and operating model
-
-- Deploy the Git repository to **Vercel** using its Next.js framework preset.
-- The app requires no backend env vars, API keys or database in MVP.
-- Run production build locally before deployment; smoke-test worker execution and client persistence on the deployed app.
-- Ensure chart/browser-only modules are isolated behind client boundaries.
-- Maintain `README.md` with commands, lesson list, measurement methodology, limitations and deployment link (when known).
-- Do not assume build success means algorithms are correct or lab data scientifically sound.
-
-## 11. Implementation order / anti-overengineering checklist
-
-1. Scaffold Next.js in `src/app` and establish repo scripts.
-2. Build the pure algorithm registry + validated deterministic benchmark engine and tests.
-3. Integrate Web Worker, cancellation and actual measured results; smoke-test dev/build.
-4. Build `/lab` with controls, chart, table and methodological notes.
-5. Build **one complete lesson**, including hypothesis, experiment, answer checking and persistence.
-6. Extract stable reusable lesson primitives and add remaining five lessons.
-7. Complete `/progress` and optional saved experiments.
-8. Test responsive/accessibility behavior, deploy to Vercel and conduct educational evaluation.
-
-**Do not** implement six separate visually complete but nonfunctional lesson pages before the core experiment engine exists. The architecture is successful only when the main learning journey works from start to finish.
+When a task conflicts with the target tree, favor **minimal modifications to the actual repo** rather than wholesale restructuring. Keep `product.md` and `AGENTS.md` aligned with the MVP simulation decision when those files are next edited.
