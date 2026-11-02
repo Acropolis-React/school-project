@@ -46,7 +46,7 @@ Open `/lab`, select comparable algorithms / growth models, configure input range
 
 | Route | User purpose |
 | --- | --- |
-| `/` | Redirect to `/learn` |
+| `/` | Educational home dashboard: continue learning, course progress and lab shortcut |
 | `/learn` | Curriculum and continue-learning entry |
 | `/learn/[slug]` | Structured lesson with exercise steps |
 | `/lab` | Free complexity laboratory |

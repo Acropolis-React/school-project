@@ -57,7 +57,7 @@ algolab/
 ├── src/
 │   ├── app/                              # Next.js App Router, keep existing location
 │   │   ├── layout.tsx                    # Uses providers / global styles
-│   │   ├── page.tsx                      # Entry page or redirect to /learn
+│   │   ├── page.tsx                      # Thin adapter -> views/home dashboard
 │   │   ├── learn/
 │   │   │   ├── page.tsx                  # Thin adapter -> views/learn
 │   │   │   └── [slug]/page.tsx           # Thin adapter -> views/lesson
@@ -67,6 +67,7 @@ algolab/
 │   │   ├── ui/                            # Global client providers only when required
 │   │   └── styles/globals.css             # Global Tailwind styles/theme
 │   ├── views/
+│   │   ├── home/                         # Returning learner dashboard
 │   │   ├── learn/
 │   │   │   ├── ui/learn-view.tsx
 │   │   │   └── index.ts
@@ -80,13 +81,12 @@ algolab/
 │   │       ├── ui/progress-view.tsx
 │   │       └── index.ts
 │   ├── widgets/
-│   │   ├── app-navigation/
-│   │   │   ├── ui/app-navigation.tsx
-│   │   │   └── index.ts
-│   │   ├── experiment-workspace/         # Only if shared across lab and lessons
-│   │   │   ├── ui/experiment-workspace.tsx
-│   │   │   └── index.ts
-│   │   └── lesson-workspace/             # Only if justified by reuse
+│   │   ├── app-shell/                     # Global application frame/navigation
+│   │   ├── home-page/                     # Page-specific home sections
+│   │   ├── learn-page/                    # Course list and progress heading
+│   │   ├── lesson-page/                   # Lesson runner sections
+│   │   ├── lab-page/                      # Lab settings, chart and results
+│   │   └── progress-page/                 # Progress states and sections
 │   ├── features/
 │   │   ├── configure-experiment/
 │   │   │   ├── model/
@@ -139,13 +139,13 @@ This is a **responsibility map**, not a command to create all directories at onc
 
 - **`app`:** Route declarations, Next.js layouts, metadata, error/loading boundaries; thin imports of `views`. No algorithm or exercise logic.
 - **`providers`:** Global providers, global CSS, app initialization. Avoid global state unless necessary.
-- **`views`:** Complete route-level screens, composition of features/widgets/entities and screen-specific layout.
-- **`widgets`:** Substantial composed blocks reused between screens (for example lesson and lab experiment workspace). Not a dumping ground for every component.
+- **`views`:** Thin route-level adapters that compose the corresponding page widget and pass route data when required.
+- **`widgets`:** One page-specific slice per screen plus global composition widgets. Independent screen sections live in the page slice; widget slices never import one another.
 - **`features`:** User interactions such as configuring experiments, requesting results, submitting answers, updating progress.
 - **`entities`:** Algorithms, experiments, lessons, exercises and progress as domain concepts; schemas, fixed data, domain-specific UI.
-- **`shared`:** Accessible buttons, inputs, cards, formatting utilities, generic storage helpers, design tokens.
+- **`shared`:** Accessible, domain-independent components reused across page widgets, plus formatting utilities, generic storage helpers and design tokens.
 
-Each slice should expose a public API via `index.ts`. Import other slices through their public APIs rather than deep paths; inside a slice, relative imports are allowed. Configure alias `@/*` to point at `src/*` if not already configured.
+Each slice should expose a public API via `index.ts`. Import other slices through their public APIs rather than deep paths; inside a slice, relative imports are allowed. Keep source files focused and normally below 300 lines, splitting large TSX files by meaningful UI sections. Configure alias `@/*` to point at `src/*` if not already configured.
 
 ## 4. Runtime behavior — MVP
 
