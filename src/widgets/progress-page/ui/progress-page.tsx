@@ -21,7 +21,7 @@ export function ProgressPage() {
       />
       {!hydrated ? (
         <output
-          className="h-32 animate-pulse border border-border bg-surface"
+          className="h-32 animate-pulse rounded-xl border border-border-strong bg-surface shadow-[0_4px_12px_rgba(0,0,0,0.14)]"
           aria-label="Загрузка прогресса"
         />
       ) : isEmpty ? (

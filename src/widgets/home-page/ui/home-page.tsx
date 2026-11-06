@@ -32,7 +32,7 @@ export function HomePage() {
   const currentStep = progress.lessonSteps[currentLesson.slug] ?? 0;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-10">
       <HomeHeader
         hydrated={hydrated}
         hasCompletedFirstLesson={hasCompletedFirstLesson}
@@ -43,7 +43,7 @@ export function HomePage() {
         hydrated={hydrated}
         hasCompletedFirstLesson={hasCompletedFirstLesson}
       />
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,1.35fr)_minmax(300px,0.65fr)]">
+      <div className="grid gap-5 lg:grid-cols-[minmax(0,1.45fr)_minmax(300px,0.55fr)]">
         <CourseProgressSummary
           completedLessonSlugs={progress.completedLessonSlugs}
         />

@@ -36,7 +36,7 @@ export function ExperimentSettings({
 }: ExperimentSettingsProps) {
   return (
     <aside
-      className="self-start border border-border bg-surface p-5 xl:sticky xl:top-6"
+      className="border border-border bg-surface p-5"
       aria-labelledby="settings-heading"
     >
       <h2 id="settings-heading" className="text-base font-semibold">
@@ -122,8 +122,15 @@ export function ExperimentSettings({
             <label className="block text-sm font-medium" htmlFor="min-size">
               Минимум n
             </label>
+            <p
+              id="min-size-hint"
+              className="mt-1 text-xs leading-4 text-text-muted"
+            >
+              Начальный размер входа.
+            </p>
             <input
               id="min-size"
+              aria-describedby="min-size-hint"
               type="number"
               min="1"
               max="490"
@@ -136,10 +143,17 @@ export function ExperimentSettings({
           </div>
           <div>
             <label className="block text-sm font-medium" htmlFor="samples">
-              Точек
+              Кол-во точек
             </label>
+            <p
+              id="samples-hint"
+              className="mt-1 text-xs leading-4 text-text-muted"
+            >
+              Кол-во значений на графике.
+            </p>
             <select
               id="samples"
+              aria-describedby="samples-hint"
               value={draft.samples}
               onChange={(event) =>
                 onConfigChange({ samples: Number(event.target.value) })
@@ -157,9 +171,16 @@ export function ExperimentSettings({
         <label className="mt-4 block text-sm font-medium" htmlFor="max-size">
           Максимум n
         </label>
+        <p
+          id="max-size-hint"
+          className="mt-1 text-xs leading-4 text-text-muted"
+        >
+          Конечный размер входа.
+        </p>
         <div className="mt-3 flex items-center gap-3">
           <input
             id="max-size"
+            aria-describedby="max-size-hint"
             type="range"
             min="40"
             max="500"

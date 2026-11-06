@@ -54,7 +54,7 @@ function Brand() {
     >
       <span
         aria-hidden="true"
-        className="grid h-7 w-7 place-items-center rounded-md bg-accent/10 text-accent"
+        className="grid h-7 w-7 place-items-center rounded-md border border-accent/20 bg-accent/10 text-accent"
       >
         <Braces size={18} strokeWidth={2.2} />
       </span>
@@ -67,7 +67,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
 
   return (
-    <div className="min-h-dvh bg-app text-text-primary lg:grid lg:grid-cols-[232px_minmax(0,1fr)]">
+    <div className="app-background min-h-dvh text-text-primary lg:grid lg:grid-cols-[232px_minmax(0,1fr)]">
       <aside className="fixed inset-y-0 left-0 z-20 hidden w-[232px] flex-col border-r border-border bg-sidebar px-4 py-5 lg:flex">
         <div className="px-2">
           <Brand />
@@ -81,7 +81,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 key={item.href}
                 href={item.href}
                 aria-current={active ? "page" : undefined}
-                className={`relative flex min-h-11 items-center gap-3 rounded-lg px-3 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent ${active ? "bg-surface-raised text-text-primary" : "text-text-secondary hover:bg-surface-raised hover:text-text-primary"}`}
+                className={`relative flex min-h-11 items-center gap-3 rounded-lg px-3 text-sm font-medium transition-[background-color,color,box-shadow] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent ${active ? "bg-surface-raised text-text-primary shadow-[inset_0_0_0_1px_rgba(76,201,166,0.08),0_5px_16px_rgba(0,0,0,0.14)]" : "text-text-secondary hover:bg-surface-raised hover:text-text-primary"}`}
               >
                 {active ? (
                   <span className="absolute inset-y-2 left-0 w-0.5 rounded-full bg-accent" />
@@ -102,7 +102,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         </p>
       </aside>
 
-      <header className="sticky top-0 z-20 flex h-15 items-center justify-between border-b border-border bg-app/95 px-4 backdrop-blur lg:hidden">
+      <header className="sticky top-0 z-20 flex h-15 items-center justify-between border-b border-border bg-app/96 px-4 backdrop-blur-sm lg:hidden">
         <Brand />
         <span className="text-xs font-medium text-text-secondary">
           Изучаем Big O
@@ -127,7 +127,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               key={item.href}
               href={item.href}
               aria-current={active ? "page" : undefined}
-              className={`flex min-h-16 flex-col items-center justify-center gap-1 rounded-md text-[11px] font-medium focus-visible:outline-2 focus-visible:outline-inset focus-visible:outline-accent ${active ? "text-accent" : "text-text-secondary"}`}
+              className={`my-1 flex min-h-14 flex-col items-center justify-center gap-1 rounded-lg text-[11px] font-medium transition-colors focus-visible:outline-2 focus-visible:outline-inset focus-visible:outline-accent ${active ? "bg-accent/8 text-accent" : "text-text-secondary hover:bg-surface-raised"}`}
             >
               <Icon
                 aria-hidden="true"

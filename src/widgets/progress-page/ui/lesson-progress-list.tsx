@@ -39,7 +39,7 @@ export function LessonProgressList({
               </div>
               <ButtonLink
                 href={`/learn/${lesson.slug}`}
-                variant="ghost"
+                variant="secondary"
                 className="w-full sm:w-auto"
               >
                 {done

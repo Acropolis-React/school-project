@@ -28,7 +28,7 @@ export function ExperimentChart({
 }: ExperimentChartProps) {
   return (
     <section
-      className="border border-border bg-surface p-4 sm:p-5"
+      className="flex h-full flex-col border border-border bg-surface p-4 sm:p-5"
       aria-labelledby="chart-heading"
     >
       <div className="flex flex-col gap-2 border-b border-border pb-4 sm:flex-row sm:items-start sm:justify-between">
@@ -45,7 +45,7 @@ export function ExperimentChart({
         </span>
       </div>
       <div
-        className="mt-4 h-[310px] w-full sm:h-[400px]"
+        className="mt-4 h-[310px] w-full sm:h-[400px] xl:h-auto xl:min-h-[400px] xl:flex-1"
         role="img"
         aria-label={`Линейный график теоретического роста ${resultKind}`}
       >

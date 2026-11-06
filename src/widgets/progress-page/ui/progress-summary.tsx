@@ -17,7 +17,7 @@ export function ProgressSummary({
 
   return (
     <section
-      className="grid gap-6 border-y border-border py-6 sm:grid-cols-2"
+      className="grid gap-6 rounded-xl border border-border-strong bg-surface p-5 shadow-[0_4px_12px_rgba(0,0,0,0.16)] sm:grid-cols-2 sm:p-6"
       aria-label="Сводка прогресса"
     >
       <div>

@@ -22,10 +22,15 @@ export function MiniExperiment({ lesson }: { lesson: Lesson }) {
   return (
     <div>
       <div className="flex items-start gap-3">
-        <FlaskConical className="mt-1 text-accent" size={22} />
+        <span
+          aria-hidden="true"
+          className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-accent/25 bg-accent/10 text-accent"
+        >
+          <FlaskConical size={20} />
+        </span>
         <div>
           <h2 className="text-xl font-semibold">Сравните модели</h2>
-          <p className="mt-1 text-sm leading-6 text-text-secondary">
+          <p className="mt-1 max-w-2xl text-sm leading-6 text-text-secondary">
             Теоретические значения в условных единицах. Это не запуск алгоритма
             и не замер времени.
           </p>

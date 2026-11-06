@@ -4,7 +4,7 @@ import { Button } from "@/shared/ui";
 export function ResetProgressCard({ onReset }: { onReset: () => void }) {
   return (
     <section
-      className="border border-border bg-surface p-5"
+      className="rounded-xl border border-border bg-surface/70 p-5 shadow-[0_3px_10px_rgba(0,0,0,0.14)]"
       aria-labelledby="reset-heading"
     >
       <h2 id="reset-heading" className="font-semibold">

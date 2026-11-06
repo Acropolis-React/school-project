@@ -84,32 +84,32 @@ export function ExperimentWorkspace() {
     config.mode === "algorithms" ? "алгоритмов" : "классов сложности";
 
   return (
-    <div className="grid gap-5 xl:grid-cols-[340px_minmax(0,1fr)]">
-      <ExperimentSettings
-        draft={draft}
-        availableSeries={availableSeries}
-        error={error}
-        onModeChange={setMode}
-        onFamilyChange={setFamily}
-        onToggleSeries={toggleSeries}
-        onConfigChange={(patch) =>
-          setDraft((current) => ({ ...current, ...patch }))
-        }
-        onApply={apply}
-        onReset={reset}
-      />
-      <div className="min-w-0 space-y-5">
+    <div className="space-y-5">
+      <div className="grid gap-5 xl:grid-cols-[340px_minmax(0,1fr)]">
+        <ExperimentSettings
+          draft={draft}
+          availableSeries={availableSeries}
+          error={error}
+          onModeChange={setMode}
+          onFamilyChange={setFamily}
+          onToggleSeries={toggleSeries}
+          onConfigChange={(patch) =>
+            setDraft((current) => ({ ...current, ...patch }))
+          }
+          onApply={apply}
+          onReset={reset}
+        />
         <ExperimentChart
           points={points}
           series={selectedSeries}
           resultKind={resultKind}
         />
-        <ExperimentResults
-          points={points}
-          series={selectedSeries}
-          resultKind={resultKind}
-        />
       </div>
+      <ExperimentResults
+        points={points}
+        series={selectedSeries}
+        resultKind={resultKind}
+      />
     </div>
   );
 }
