@@ -1,5 +1,8 @@
 import { ArrowRight, CheckCircle2, Circle } from "lucide-react";
-import type { LearningProgress } from "@/entities/learning-progress";
+import {
+  getAnswerStats,
+  type LearningProgress,
+} from "@/entities/learning-progress";
 import { lessons } from "@/entities/lesson";
 import { ButtonLink } from "@/shared/ui";
 
@@ -17,6 +20,11 @@ export function LessonProgressList({
         {lessons.map((lesson) => {
           const done = progress.completedLessonSlugs.includes(lesson.slug);
           const step = progress.lessonSteps[lesson.slug];
+          const stats = getAnswerStats(
+            progress.answers.filter(
+              (answer) => answer.lessonSlug === lesson.slug,
+            ),
+          );
           return (
             <li
               key={lesson.slug}
@@ -36,6 +44,14 @@ export function LessonProgressList({
                       ? "Не начат"
                       : `Остановились на шаге ${step + 1} из 5`}
                 </p>
+                {stats.total > 0 ? (
+                  <p className="mt-1 text-xs text-text-secondary">
+                    Ответы: {stats.correct} из {stats.total} верно
+                    {stats.accuracy === null
+                      ? ""
+                      : ` · точность ${stats.accuracy}%`}
+                  </p>
+                ) : null}
               </div>
               <ButtonLink
                 href={`/learn/${lesson.slug}`}

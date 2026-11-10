@@ -1,23 +1,22 @@
+import type { AnswerStats } from "@/entities/learning-progress";
 import { lessons } from "@/entities/lesson";
 
 type ProgressSummaryProps = {
   completed: number;
-  correct: number;
-  answerCount: number;
+  answerStats: AnswerStats;
+  unresolvedMistakes: number;
 };
 
 export function ProgressSummary({
   completed,
-  correct,
-  answerCount,
+  answerStats,
+  unresolvedMistakes,
 }: ProgressSummaryProps) {
-  const accuracy =
-    answerCount > 0 ? Math.round((correct / answerCount) * 100) : null;
   const completionPercent = Math.round((completed / lessons.length) * 100);
 
   return (
     <section
-      className="grid gap-6 rounded-xl border border-border-strong bg-surface p-5 shadow-[0_4px_12px_rgba(0,0,0,0.16)] sm:grid-cols-2 sm:p-6"
+      className="grid gap-6 rounded-xl border border-border-strong bg-surface p-5 shadow-[0_4px_12px_rgba(0,0,0,0.16)] md:grid-cols-3 sm:p-6"
       aria-label="Сводка прогресса"
     >
       <div>
@@ -40,20 +39,27 @@ export function ProgressSummary({
           />
         </div>
       </div>
-      <div className="border-t border-border pt-5 sm:border-l sm:border-t-0 sm:pl-6 sm:pt-0">
+      <div className="border-t border-border pt-5 md:border-l md:border-t-0 md:pl-6 md:pt-0">
         <p className="text-sm text-text-secondary">Точность ответов</p>
-        {accuracy === null ? (
+        {answerStats.accuracy === null ? (
           <p className="mt-2 text-sm text-text-muted">
             Пока нет проверенных ответов.
           </p>
         ) : (
           <>
-            <p className="mt-1 text-3xl font-bold">{accuracy}%</p>
+            <p className="mt-1 text-3xl font-bold">{answerStats.accuracy}%</p>
             <p className="mt-1 text-xs text-text-muted">
-              {correct} верных из {answerCount} попыток
+              {answerStats.correct} верных из {answerStats.total} попыток
             </p>
           </>
         )}
+      </div>
+      <div className="border-t border-border pt-5 md:border-l md:border-t-0 md:pl-6 md:pt-0">
+        <p className="text-sm text-text-secondary">Нужно повторить</p>
+        <p className="mt-1 text-3xl font-bold">{unresolvedMistakes}</p>
+        <p className="mt-1 text-xs text-text-muted">
+          вопросов с последним неверным ответом
+        </p>
       </div>
     </section>
   );

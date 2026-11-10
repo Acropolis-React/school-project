@@ -1,7 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { AlgorithmFamily } from "@/entities/algorithm";
+import {
+  type SavedExploration,
+  useSavedExplorations,
+} from "@/features/manage-saved-explorations";
 import {
   type ComparisonMode,
   defaultConfig,
@@ -14,17 +18,49 @@ import {
 import { ExperimentChart } from "./experiment-chart";
 import { ExperimentResults } from "./experiment-results";
 import { ExperimentSettings } from "./experiment-settings";
+import { SavedExplorationsPanel } from "./saved-explorations-panel";
 
 export function ExperimentWorkspace() {
   const [draft, setDraft] = useState<LabConfig>(defaultConfig);
   const [config, setConfig] = useState<LabConfig>(defaultConfig);
   const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
+  const requestedExplorationHandled = useRef(false);
+  const savedExplorations = useSavedExplorations();
   const availableSeries = getAvailableSeries(draft);
   const selectedSeries = useMemo(() => getSelectedSeries(config), [config]);
   const points = useMemo(
     () => generatePoints(config, selectedSeries),
     [config, selectedSeries],
   );
+
+  const openSaved = useCallback((item: SavedExploration) => {
+    const restored = {
+      ...item.config,
+      selectedIds: [...item.config.selectedIds],
+    };
+    setDraft(restored);
+    setConfig(restored);
+    setError("");
+    setNotice("Сохранённая конфигурация открыта.");
+  }, []);
+
+  useEffect(() => {
+    if (!savedExplorations.hydrated || requestedExplorationHandled.current)
+      return;
+
+    requestedExplorationHandled.current = true;
+    const requestedId = new URLSearchParams(window.location.search).get(
+      "exploration",
+    );
+    if (!requestedId) return;
+
+    const requested = savedExplorations.items.find(
+      (item) => item.id === requestedId,
+    );
+    if (requested) openSaved(requested);
+    else setError("Сохранённое исследование не найдено или было удалено.");
+  }, [savedExplorations.hydrated, savedExplorations.items, openSaved]);
 
   const setMode = (mode: ComparisonMode) => {
     setDraft((current) => ({
@@ -33,6 +69,7 @@ export function ExperimentWorkspace() {
       selectedIds: defaultIds(mode, current.family),
     }));
     setError("");
+    setNotice("");
   };
 
   const setFamily = (family: AlgorithmFamily) => {
@@ -42,6 +79,7 @@ export function ExperimentWorkspace() {
       selectedIds: defaultIds("algorithms", family),
     }));
     setError("");
+    setNotice("");
   };
 
   const toggleSeries = (id: string) => {
@@ -72,12 +110,19 @@ export function ExperimentWorkspace() {
     }
     setError("");
     setConfig(draft);
+    setNotice("Сравнение обновлено.");
   };
 
   const reset = () => {
     setDraft(defaultConfig);
     setConfig(defaultConfig);
     setError("");
+    setNotice("Настройки возвращены к исходным.");
+  };
+
+  const saveCurrent = () => {
+    const saved = savedExplorations.save(config);
+    if (saved) setNotice("Исследование сохранено в этом браузере.");
   };
 
   const resultKind =
@@ -85,6 +130,14 @@ export function ExperimentWorkspace() {
 
   return (
     <div className="space-y-5">
+      {notice ? (
+        <output
+          className="block border-l-2 border-accent bg-accent/8 px-4 py-3 text-sm text-text-primary"
+          aria-live="polite"
+        >
+          {notice}
+        </output>
+      ) : null}
       <div className="grid gap-5 xl:grid-cols-[340px_minmax(0,1fr)]">
         <ExperimentSettings
           draft={draft}
@@ -109,6 +162,14 @@ export function ExperimentWorkspace() {
         points={points}
         series={selectedSeries}
         resultKind={resultKind}
+      />
+      <SavedExplorationsPanel
+        items={savedExplorations.items}
+        hydrated={savedExplorations.hydrated}
+        storageError={savedExplorations.storageError}
+        onSave={saveCurrent}
+        onOpen={openSaved}
+        onRemove={savedExplorations.remove}
       />
     </div>
   );

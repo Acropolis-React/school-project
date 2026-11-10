@@ -21,7 +21,12 @@ type ProgressContextValue = {
   progress: LearningProgress;
   hydrated: boolean;
   visitStep: (lessonSlug: string, step: number) => void;
-  recordAnswer: (lessonSlug: string, correct: boolean) => void;
+  recordAnswer: (
+    lessonSlug: string,
+    questionId: string,
+    choiceId: string,
+    correct: boolean,
+  ) => void;
   completeLesson: (lessonSlug: string) => void;
   resetProgress: () => void;
 };
@@ -66,13 +71,19 @@ export function LearningProgressProvider({
           },
         }));
       },
-      recordAnswer: (lessonSlug, correct) => {
+      recordAnswer: (lessonSlug, questionId, choiceId, correct) => {
         commit((current) => ({
           ...current,
           answers: [
             ...current.answers,
-            { lessonSlug, correct, answeredAt: new Date().toISOString() },
-          ].slice(-100),
+            {
+              lessonSlug,
+              questionId,
+              choiceId,
+              correct,
+              answeredAt: new Date().toISOString(),
+            },
+          ].slice(-200),
         }));
       },
       completeLesson: (lessonSlug) => {

@@ -8,21 +8,25 @@ import { useLearningProgress } from "@/features/track-lesson-progress";
 import { LessonFooter } from "./lesson-footer";
 import { LessonHeader } from "./lesson-header";
 import { LessonStepContent } from "./lesson-step-content";
-import type { QuestionKind, QuestionState } from "./question-block";
+import type { QuestionState } from "./question-block";
 
-const initialQuestionStates: Record<QuestionKind, QuestionState> = {
-  hypothesis: { choice: "", submitted: false },
-  practice: { choice: "", submitted: false },
-};
+function createInitialQuestionStates(lesson: Lesson) {
+  return [lesson.hypothesis, ...lesson.practice].reduce<
+    Record<string, QuestionState>
+  >((states, question) => {
+    states[question.id] = { choice: "", submitted: false };
+    return states;
+  }, {});
+}
 
 export function LessonPage({ lesson }: { lesson: Lesson }) {
   const { progress, hydrated, visitStep, completeLesson } =
     useLearningProgress();
   const [step, setStep] = useState(progress.lessonSteps[lesson.slug] ?? 0);
-  const [practicePassed, setPracticePassed] = useState(
-    progress.completedLessonSlugs.includes(lesson.slug),
+  const [passedQuestionIds, setPassedQuestionIds] = useState<string[]>([]);
+  const [questionStates, setQuestionStates] = useState(() =>
+    createInitialQuestionStates(lesson),
   );
-  const [questionStates, setQuestionStates] = useState(initialQuestionStates);
   const initializedLessonSlug = useRef<string | null>(null);
 
   useEffect(() => {
@@ -30,14 +34,9 @@ export function LessonPage({ lesson }: { lesson: Lesson }) {
 
     initializedLessonSlug.current = lesson.slug;
     setStep(progress.lessonSteps[lesson.slug] ?? 0);
-    setPracticePassed(progress.completedLessonSlugs.includes(lesson.slug));
-    setQuestionStates(initialQuestionStates);
-  }, [
-    hydrated,
-    lesson.slug,
-    progress.completedLessonSlugs,
-    progress.lessonSteps,
-  ]);
+    setPassedQuestionIds([]);
+    setQuestionStates(createInitialQuestionStates(lesson));
+  }, [hydrated, lesson, progress.lessonSteps]);
 
   const goTo = (nextStep: number) => {
     const bounded = Math.max(0, Math.min(4, nextStep));
@@ -46,9 +45,21 @@ export function LessonPage({ lesson }: { lesson: Lesson }) {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const updateQuestionState = (kind: QuestionKind, state: QuestionState) => {
-    setQuestionStates((current) => ({ ...current, [kind]: state }));
+  const updateQuestionState = (questionId: string, state: QuestionState) => {
+    setQuestionStates((current) => ({ ...current, [questionId]: state }));
   };
+
+  const markQuestionPassed = (questionId: string) => {
+    setPassedQuestionIds((current) =>
+      current.includes(questionId) ? current : [...current, questionId],
+    );
+  };
+
+  const practicePassed =
+    progress.completedLessonSlugs.includes(lesson.slug) ||
+    lesson.practice.every((question) =>
+      passedQuestionIds.includes(question.id),
+    );
 
   return (
     <div className="mx-auto max-w-4xl">
@@ -65,7 +76,7 @@ export function LessonPage({ lesson }: { lesson: Lesson }) {
         step={step}
         questionStates={questionStates}
         onQuestionStateChange={updateQuestionState}
-        onPracticePassed={() => setPracticePassed(true)}
+        onQuestionPassed={markQuestionPassed}
       />
       <LessonFooter
         step={step}

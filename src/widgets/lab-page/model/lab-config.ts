@@ -3,17 +3,11 @@ import {
   getAlgorithmsByFamily,
 } from "@/entities/algorithm";
 import { complexityModels } from "@/entities/experiment";
+import type { SavedExplorationConfig } from "@/features/manage-saved-explorations";
 
 export type ComparisonMode = "algorithms" | "complexities";
 
-export type LabConfig = {
-  mode: ComparisonMode;
-  family: AlgorithmFamily;
-  selectedIds: string[];
-  minSize: number;
-  maxSize: number;
-  samples: number;
-};
+export type LabConfig = SavedExplorationConfig;
 
 export type SeriesDefinition = {
   id: string;

@@ -12,7 +12,10 @@ export type LessonChoice = {
 };
 
 export type LessonQuestion = {
+  id: string;
   prompt: string;
+  code?: string;
+  codeCaption?: string;
   choices: LessonChoice[];
   correctChoiceId: string;
   explanation: string;
@@ -30,7 +33,7 @@ export type Lesson = {
   hypothesis: LessonQuestion;
   experimentModels: ["linear" | "logarithmic" | "linearithmic", "quadratic"];
   interpretation: string[];
-  practice: LessonQuestion;
+  practice: LessonQuestion[];
 };
 
 export const LESSON_STEPS = [

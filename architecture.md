@@ -16,7 +16,7 @@
 | Package manager | pnpm |
 | Validation | Biome (`pnpm lint`), TypeScript (`pnpm typecheck`), production build (`pnpm build`) |
 | Initial data source | Typed deterministic simulation fixtures |
-| Persistence | Browser localStorage for learning progress |
+| Persistence | Browser localStorage for learning progress and saved laboratory configurations |
 | Deployment | Vercel |
 
 The initial milestone is a **working educational UI**, with guided lessons, exercises, a laboratory interface, and charts using clearly labeled simulated data. No dedicated backend, database, authentication, Web Worker, arbitrary code execution, or server-side benchmarking is required in this milestone.
@@ -100,7 +100,11 @@ algolab/
 │   │   │   ├── lib/                       # Pure answer validation
 │   │   │   ├── ui/
 │   │   │   └── index.ts
-│   │   └── track-lesson-progress/
+│   │   ├── track-lesson-progress/
+│   │   │   ├── model/
+│   │   │   └── index.ts
+│   │   └── manage-saved-explorations/    # Bounded, validated local lab history
+│   │       ├── lib/
 │   │       ├── model/
 │   │       └── index.ts
 │   ├── entities/
@@ -222,6 +226,8 @@ Do not create Web Worker files, messaging protocols, RPC wrappers, fake progress
 - Use a reusable lesson renderer: introduction, concise theory, code examples, prediction, experiment, explanation, and 2–3 practice questions.
 - C++ code snippets are read-only learning examples; compiling/executing user code is out of scope.
 - Answer evaluation uses pure functions that can be verified independently; show explanations after a response. Do not present a multiple-choice guess as a mathematical proof.
+- Questions have stable IDs. Answer records include the selected choice so `/progress` can resolve the latest outcome against trusted lesson content and present a review of unresolved mistakes.
+- The final lesson uses the same question renderer for a multi-question unfamiliar-code classification set; completion requires every practice question in that set to be answered correctly.
 - An experiment embedded in a lesson should reuse the same configuration/result contracts as the free laboratory.
 - Keep lessons and free laboratory connected but usable independently.
 
@@ -230,8 +236,10 @@ Do not create Web Worker files, messaging protocols, RPC wrappers, fake progress
 - Save completion state and answered-exercise outcomes in localStorage; do not require login.
 - Access browser-only APIs exclusively from client-side code.
 - Use a versioned schema/key, validate parsed payloads and recover gracefully from corrupted or missing data.
+- The learning-progress payload is currently schema version 2. Version 1 answer records are migrated without fabricated question details, so aggregate statistics remain available while only resolvable version 2 records appear in mistake review.
 - Do not treat progress saved in localStorage as portable across devices.
 - Avoid persisting huge charts or input arrays; save compact settings and results only if history is explicitly implemented.
+- Saved explorations use their own versioned, bounded store (maximum 20 items). Only validated configurations and creation timestamps are persisted; deterministic model points are regenerated when a saved exploration is reopened.
 
 ## 7. UI / UX rules
 

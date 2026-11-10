@@ -1,19 +1,17 @@
 import type { Lesson } from "@/entities/lesson";
 import { MiniExperiment } from "./mini-experiment";
 import { MiniExperimentChart } from "./mini-experiment-chart";
-import {
-  QuestionBlock,
-  type QuestionKind,
-  type QuestionState,
-} from "./question-block";
+import { QuestionBlock, type QuestionState } from "./question-block";
 
 type LessonStepContentProps = {
   lesson: Lesson;
   step: number;
-  questionStates: Record<QuestionKind, QuestionState>;
-  onQuestionStateChange: (kind: QuestionKind, state: QuestionState) => void;
-  onPracticePassed: () => void;
+  questionStates: Record<string, QuestionState>;
+  onQuestionStateChange: (questionId: string, state: QuestionState) => void;
+  onQuestionPassed: (questionId: string) => void;
 };
+
+const emptyQuestionState: QuestionState = { choice: "", submitted: false };
 
 function TheoryStep({ lesson }: { lesson: Lesson }) {
   return (
@@ -62,33 +60,79 @@ function InterpretationStep({ lesson }: { lesson: Lesson }) {
   );
 }
 
+type PracticeStepProps = Omit<LessonStepContentProps, "step">;
+
+function PracticeStep({
+  lesson,
+  questionStates,
+  onQuestionStateChange,
+  onQuestionPassed,
+}: PracticeStepProps) {
+  return (
+    <div>
+      {lesson.practice.length > 1 ? (
+        <div className="mb-8 border-l-2 border-accent bg-accent/8 p-4">
+          <h2 className="font-semibold">Разбор незнакомого кода</h2>
+          <p className="mt-1 text-sm leading-6 text-text-secondary">
+            Классифицируйте каждый фрагмент. Урок завершится, когда все задачи
+            будут решены верно; после ошибки можно попробовать снова.
+          </p>
+        </div>
+      ) : null}
+      <div className="divide-y divide-border">
+        {lesson.practice.map((question, index) => (
+          <section key={question.id} className="py-8 first:pt-0 last:pb-0">
+            <QuestionBlock
+              lessonSlug={lesson.slug}
+              question={question}
+              heading={
+                lesson.practice.length > 1
+                  ? `Задача ${index + 1} из ${lesson.practice.length}`
+                  : "Проверьте понимание"
+              }
+              state={questionStates[question.id] ?? emptyQuestionState}
+              onStateChange={(state) =>
+                onQuestionStateChange(question.id, state)
+              }
+              onCorrect={() => onQuestionPassed(question.id)}
+            />
+          </section>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function LessonStepContent({
   lesson,
   step,
   questionStates,
   onQuestionStateChange,
-  onPracticePassed,
+  onQuestionPassed,
 }: LessonStepContentProps) {
   return (
     <article className="min-h-[430px] py-8 sm:py-10">
       {step === 0 ? <TheoryStep lesson={lesson} /> : null}
       {step === 1 ? (
         <QuestionBlock
-          lesson={lesson}
-          kind="hypothesis"
-          state={questionStates.hypothesis}
-          onStateChange={(state) => onQuestionStateChange("hypothesis", state)}
+          lessonSlug={lesson.slug}
+          question={lesson.hypothesis}
+          heading="Сформулируйте гипотезу"
+          state={questionStates[lesson.hypothesis.id] ?? emptyQuestionState}
+          onStateChange={(state) =>
+            onQuestionStateChange(lesson.hypothesis.id, state)
+          }
+          onCorrect={() => onQuestionPassed(lesson.hypothesis.id)}
         />
       ) : null}
       {step === 2 ? <MiniExperiment lesson={lesson} /> : null}
       {step === 3 ? <InterpretationStep lesson={lesson} /> : null}
       {step === 4 ? (
-        <QuestionBlock
+        <PracticeStep
           lesson={lesson}
-          kind="practice"
-          state={questionStates.practice}
-          onStateChange={(state) => onQuestionStateChange("practice", state)}
-          onCorrect={onPracticePassed}
+          questionStates={questionStates}
+          onQuestionStateChange={onQuestionStateChange}
+          onQuestionPassed={onQuestionPassed}
         />
       ) : null}
     </article>

@@ -1,4 +1,5 @@
 import type { Lesson } from "../model/types";
+import { analyzeCodePractice } from "./analyze-code-questions";
 
 export const lessons: Lesson[] = [
   {
@@ -15,6 +16,7 @@ export const lessons: Lesson[] = [
     code: "int sum = 0;\nfor (int i = 0; i < n; ++i) {\n  sum += values[i];\n}\nreturn sum;",
     codeCaption: "Цикл проходит по каждому элементу один раз.",
     hypothesis: {
+      id: "what-is-big-o-hypothesis",
       prompt:
         "Если n увеличить в 2 раза, как примерно изменится число шагов линейного алгоритма?",
       choices: [
@@ -31,17 +33,20 @@ export const lessons: Lesson[] = [
       "Линейная кривая растёт равномерно: удвоение n удваивает значение модели.",
       "Квадратичная кривая быстро отрывается: при удвоении n значение n² увеличивается в четыре раза.",
     ],
-    practice: {
-      prompt: "Какова временная сложность показанного цикла?",
-      choices: [
-        { id: "constant", label: "O(1) — константная" },
-        { id: "linear", label: "O(n) — линейная" },
-        { id: "quadratic", label: "O(n²) — квадратичная" },
-      ],
-      correctChoiceId: "linear",
-      explanation:
-        "Тело цикла выполняется n раз, поэтому рост линейный: Θ(n), а значит и O(n).",
-    },
+    practice: [
+      {
+        id: "what-is-big-o-practice",
+        prompt: "Какова временная сложность показанного цикла?",
+        choices: [
+          { id: "constant", label: "O(1) — константная" },
+          { id: "linear", label: "O(n) — линейная" },
+          { id: "quadratic", label: "O(n²) — квадратичная" },
+        ],
+        correctChoiceId: "linear",
+        explanation:
+          "Тело цикла выполняется n раз, поэтому рост линейный: Θ(n), а значит и O(n).",
+      },
+    ],
   },
   {
     slug: "linear-and-quadratic",
@@ -58,6 +63,7 @@ export const lessons: Lesson[] = [
     codeCaption:
       "Для каждой из n итераций внешний цикл запускает n внутренних.",
     hypothesis: {
+      id: "linear-and-quadratic-hypothesis",
       prompt: "Что произойдёт с моделью n² при удвоении n?",
       choices: [
         { id: "double", label: "Рост примерно в 2 раза" },
@@ -73,17 +79,20 @@ export const lessons: Lesson[] = [
       "Разница между n и n² невелика на малых n, но быстро становится существенной.",
       "Два последовательных цикла — не то же самое, что два вложенных.",
     ],
-    practice: {
-      prompt: "Два последовательных цикла по n элементов имеют сложность…",
-      choices: [
-        { id: "linear", label: "O(n)" },
-        { id: "quadratic", label: "O(n²)" },
-        { id: "constant", label: "O(1)" },
-      ],
-      correctChoiceId: "linear",
-      explanation:
-        "n + n = 2n; постоянный множитель не меняет асимптотический класс.",
-    },
+    practice: [
+      {
+        id: "linear-and-quadratic-practice",
+        prompt: "Два последовательных цикла по n элементов имеют сложность…",
+        choices: [
+          { id: "linear", label: "O(n)" },
+          { id: "quadratic", label: "O(n²)" },
+          { id: "constant", label: "O(1)" },
+        ],
+        correctChoiceId: "linear",
+        explanation:
+          "n + n = 2n; постоянный множитель не меняет асимптотический класс.",
+      },
+    ],
   },
   {
     slug: "logarithmic",
@@ -98,6 +107,7 @@ export const lessons: Lesson[] = [
     code: "while (left <= right) {\n  int mid = left + (right - left) / 2;\n  if (a[mid] < target) left = mid + 1;\n  else right = mid - 1;\n}",
     codeCaption: "После каждой проверки остаётся примерно половина диапазона.",
     hypothesis: {
+      id: "logarithmic-hypothesis",
       prompt:
         "Если размер отсортированного массива удвоить, сколько шагов примерно добавится?",
       choices: [
@@ -113,18 +123,21 @@ export const lessons: Lesson[] = [
       "Логарифм растёт очень медленно даже на больших входах.",
       "Форма кривой не отменяет предусловия: бинарный поиск требует сортировки.",
     ],
-    practice: {
-      prompt:
-        "Можно ли применять обычный бинарный поиск к неотсортированному массиву?",
-      choices: [
-        { id: "yes", label: "Да, всегда" },
-        { id: "no", label: "Нет, результат не гарантирован" },
-        { id: "only-even", label: "Только при чётном n" },
-      ],
-      correctChoiceId: "no",
-      explanation:
-        "Без порядка нельзя корректно отбросить половину диапазона после сравнения.",
-    },
+    practice: [
+      {
+        id: "logarithmic-practice",
+        prompt:
+          "Можно ли применять обычный бинарный поиск к неотсортированному массиву?",
+        choices: [
+          { id: "yes", label: "Да, всегда" },
+          { id: "no", label: "Нет, результат не гарантирован" },
+          { id: "only-even", label: "Только при чётном n" },
+        ],
+        correctChoiceId: "no",
+        explanation:
+          "Без порядка нельзя корректно отбросить половину диапазона после сравнения.",
+      },
+    ],
   },
   {
     slug: "n-log-n",
@@ -141,6 +154,7 @@ export const lessons: Lesson[] = [
     codeCaption:
       "log n уровней разбиения, на каждом уровне — линейное слияние.",
     hypothesis: {
+      id: "n-log-n-hypothesis",
       prompt: "Какая модель быстрее растёт на больших n?",
       choices: [
         { id: "nlogn", label: "n log₂ n" },
@@ -155,17 +169,20 @@ export const lessons: Lesson[] = [
       "На малых входах накладные расходы реализации могут быть заметны, но модель описывает асимптотический рост.",
       "Big O не сравнивает конкретные реализации по времени на одном устройстве.",
     ],
-    practice: {
-      prompt: "Почему сортировка слиянием относится к Θ(n log n)?",
-      choices: [
-        { id: "levels", label: "log n уровней по n работы" },
-        { id: "nested", label: "Всегда два вложенных цикла" },
-        { id: "constant", label: "Данные не просматриваются" },
-      ],
-      correctChoiceId: "levels",
-      explanation:
-        "Разбиение создаёт логарифмическое число уровней, а суммарное слияние на уровне линейно.",
-    },
+    practice: [
+      {
+        id: "n-log-n-practice",
+        prompt: "Почему сортировка слиянием относится к Θ(n log n)?",
+        choices: [
+          { id: "levels", label: "log n уровней по n работы" },
+          { id: "nested", label: "Всегда два вложенных цикла" },
+          { id: "constant", label: "Данные не просматриваются" },
+        ],
+        correctChoiceId: "levels",
+        explanation:
+          "Разбиение создаёт логарифмическое число уровней, а суммарное слияние на уровне линейно.",
+      },
+    ],
   },
   {
     slug: "input-cases",
@@ -181,6 +198,7 @@ export const lessons: Lesson[] = [
     codeCaption:
       "Линейный поиск может завершиться сразу или проверить весь массив.",
     hypothesis: {
+      id: "input-cases-hypothesis",
       prompt: "Каков лучший случай линейного поиска?",
       choices: [
         { id: "constant", label: "Θ(1)" },
@@ -195,17 +213,20 @@ export const lessons: Lesson[] = [
       "Худший случай линейного поиска — Θ(n): элемент последний или отсутствует.",
       "Средняя оценка требует модели распределения входных данных; её нельзя просто выдумать.",
     ],
-    practice: {
-      prompt: "Что обязательно указать для оценки среднего случая?",
-      choices: [
-        { id: "distribution", label: "Предположения о входных данных" },
-        { id: "color", label: "Цвет интерфейса" },
-        { id: "cpu", label: "Только модель процессора" },
-      ],
-      correctChoiceId: "distribution",
-      explanation:
-        "Среднее вычисляется относительно явно заданного распределения возможных входов.",
-    },
+    practice: [
+      {
+        id: "input-cases-practice",
+        prompt: "Что обязательно указать для оценки среднего случая?",
+        choices: [
+          { id: "distribution", label: "Предположения о входных данных" },
+          { id: "color", label: "Цвет интерфейса" },
+          { id: "cpu", label: "Только модель процессора" },
+        ],
+        correctChoiceId: "distribution",
+        explanation:
+          "Среднее вычисляется относительно явно заданного распределения возможных входов.",
+      },
+    ],
   },
   {
     slug: "analyze-code",
@@ -221,6 +242,7 @@ export const lessons: Lesson[] = [
     code: "for (int i = 1; i < n; i *= 2) {\n  for (int j = 0; j < n; ++j) {\n    inspect(i, j);\n  }\n}",
     codeCaption: "Внешний цикл удваивает i, внутренний проходит n элементов.",
     hypothesis: {
+      id: "analyze-code-hypothesis",
       prompt: "Сколько раз примерно выполняется внешний цикл?",
       choices: [
         { id: "log", label: "log₂ n" },
@@ -236,19 +258,16 @@ export const lessons: Lesson[] = [
       "Умножаем число внешних итераций log n на n внутренних: получаем Θ(n log n).",
       "Название переменной и синтаксис цикла не заменяют анализ границ.",
     ],
-    practice: {
-      prompt: "Какова тесная временная оценка фрагмента?",
-      choices: [
-        { id: "linear", label: "Θ(n)" },
-        { id: "nlogn", label: "Θ(n log n)" },
-        { id: "square", label: "Θ(n²)" },
-      ],
-      correctChoiceId: "nlogn",
-      explanation:
-        "Внешний цикл выполняется Θ(log n) раз, а внутренний — Θ(n) на каждой итерации.",
-    },
+    practice: analyzeCodePractice,
   },
 ];
 
 export const getLesson = (slug: string) =>
   lessons.find((lesson) => lesson.slug === slug);
+
+export function getLessonQuestion(lessonSlug: string, questionId: string) {
+  const lesson = getLesson(lessonSlug);
+  if (!lesson) return undefined;
+  if (lesson.hypothesis.id === questionId) return lesson.hypothesis;
+  return lesson.practice.find((question) => question.id === questionId);
+}

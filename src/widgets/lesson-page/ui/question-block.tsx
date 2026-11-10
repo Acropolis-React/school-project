@@ -1,12 +1,10 @@
 "use client";
 
 import { CheckCircle2, CircleAlert } from "lucide-react";
-import type { Lesson } from "@/entities/lesson";
+import type { LessonQuestion } from "@/entities/lesson";
 import { evaluateAnswer } from "@/features/answer-exercise";
 import { useLearningProgress } from "@/features/track-lesson-progress";
 import { Button } from "@/shared/ui";
-
-export type QuestionKind = "hypothesis" | "practice";
 
 export type QuestionState = {
   choice: string;
@@ -14,21 +12,22 @@ export type QuestionState = {
 };
 
 type QuestionBlockProps = {
-  lesson: Lesson;
-  kind: QuestionKind;
+  lessonSlug: string;
+  question: LessonQuestion;
+  heading: string;
   state: QuestionState;
   onStateChange: (state: QuestionState) => void;
   onCorrect?: () => void;
 };
 
 export function QuestionBlock({
-  lesson,
-  kind,
+  lessonSlug,
+  question,
+  heading,
   state,
   onStateChange,
   onCorrect,
 }: QuestionBlockProps) {
-  const question = lesson[kind];
   const { recordAnswer } = useLearningProgress();
   const { choice, submitted } = state;
   const result = submitted ? evaluateAnswer(question, choice) : null;
@@ -37,20 +36,27 @@ export function QuestionBlock({
     if (!choice) return;
     const nextResult = evaluateAnswer(question, choice);
     onStateChange({ choice, submitted: true });
-    recordAnswer(lesson.slug, nextResult.correct);
+    recordAnswer(lessonSlug, question.id, choice, nextResult.correct);
     if (nextResult.correct) onCorrect?.();
   };
 
   return (
     <div>
-      <h2 className="text-xl font-semibold">
-        {kind === "hypothesis"
-          ? "Сформулируйте гипотезу"
-          : "Проверьте понимание"}
-      </h2>
+      <h2 className="text-xl font-semibold">{heading}</h2>
       <p className="mt-3 text-sm leading-6 text-text-secondary sm:text-base">
         {question.prompt}
       </p>
+      {question.code ? (
+        <figure className="mt-5 overflow-hidden rounded-lg border border-border bg-[#0a0f15]">
+          <figcaption className="border-b border-border px-4 py-2 text-xs text-text-muted">
+            C++
+            {question.codeCaption ? ` · ${question.codeCaption}` : ""}
+          </figcaption>
+          <pre className="overflow-x-auto p-4 font-mono text-sm leading-6 text-[#c9d7e3]">
+            <code>{question.code}</code>
+          </pre>
+        </figure>
+      ) : null}
       <fieldset className="mt-6 space-y-2">
         <legend className="sr-only">Выберите один вариант</legend>
         {question.choices.map((item) => (
@@ -61,7 +67,7 @@ export function QuestionBlock({
             <input
               className="size-4 accent-[#4cc9a6]"
               type="radio"
-              name={`${lesson.slug}-${kind}`}
+              name={`${lessonSlug}-${question.id}`}
               value={item.id}
               checked={choice === item.id}
               onChange={() =>
@@ -74,11 +80,15 @@ export function QuestionBlock({
       </fieldset>
       <Button
         type="button"
-        disabled={!choice || result?.correct}
+        disabled={!choice || submitted}
         onClick={submit}
         className="mt-5 w-full sm:w-auto"
       >
-        {result?.correct ? "Ответ принят" : "Проверить ответ"}
+        {result
+          ? result.correct
+            ? "Ответ принят"
+            : "Выберите другой ответ"
+          : "Проверить ответ"}
       </Button>
       {result ? (
         <output
