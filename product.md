@@ -8,7 +8,7 @@
 
 **AlgoLab** is a minimalist educational web application that teaches learners to **understand, determine, and explain Big O complexity**, not simply memorize formulas. Its core learning cycle is **Learn → Predict → Explore → Explain → Practice**.
 
-The MVP uses **deterministic, clearly labeled theoretical simulations** to illustrate algorithmic growth. It does **not** measure real execution times or operation counts. Real computational benchmarking can be introduced later if the project needs to substantiate its experimental-analysis title. Never describe mathematical plots as measured benchmarks.
+The laboratory provides two clearly separated sources: **deterministic theoretical simulations** for growth models and **instrumented TypeScript execution** for exact operation counts. Neither source reports execution time. Never describe mathematical plots as measured benchmarks or engine counts as elapsed-time benchmarks.
 
 AlgoLab is not a landing page, LeetCode alternative, animated sorting playground, or arbitrary-code execution service.
 
@@ -40,7 +40,7 @@ Open `/learn`, continue the last lesson, revisit wrong answers, or open `/progre
 
 ### Free laboratory
 
-Open `/lab`, select comparable algorithms / growth models, configure input range, view theoretical curves and data table, understand assumptions, optionally save the configuration and results. No course step is required.
+Open `/lab`, choose a theoretical comparison or an instrumented operation-count experiment, configure inputs, inspect the chart/table and assumptions, then optionally save a titled research record with a hypothesis and conclusion. No course step is required.
 
 ## 4. Main navigation and UX
 
@@ -82,15 +82,17 @@ Answers are evaluated by deterministic pure functions, with a meaningful explana
 
 ## 7. Laboratory behavior
 
-**MVP visualization source:** theoretical functions `1`, `log₂(n)`, `n`, `n·log₂(n)`, and `n²` for positive `n`, optionally with documented scaling for illustration. These are **not real elapsed times or counted operations**.
+**Theoretical source:** functions `1`, `log₂(n)`, `n`, `n·log₂(n)`, and `n²` for positive `n`, optionally with documented scaling for illustration. These are **not real elapsed times or counted operations**.
 
-**Controls:** choose a family (sorting or search), one or more comparable algorithms, select a bounded input-size range and point count, change views/metrics only when their meaning is supported. Include reasonable, explained presets.
+**Experimental source:** the trusted TypeScript engine executes linear search, binary search, bubble sort, insertion sort, and merge sort on bounded seeded inputs. It reports exact comparisons, swaps, array reads/writes, or the documented total. Counts describe these implementations and are not milliseconds.
+
+**Controls:** choose a source and family, one or more comparable algorithms, a bounded input-size range, point count, input distribution, operation metric, and reproducible seed. Search experiments can also choose target placement. Binary search requires sorted input.
 
 **Examples:** Bubble Sort / Insertion Sort / Merge Sort (sorting), Linear Search / Binary Search (search). Algorithm cards describe use, assumptions, relevant theoretical growth and best/average/worst-case distinctions where needed. For model comparisons, label what each curve represents; do not fabricate data-distribution-dependent benchmark results. A choice of random/sorted/reversed input may be omitted until a defensible model or real execution supports it.
 
-**Outputs:** interactive chart, table, brief interpretation, stated formula/assumptions, clear badge or text such as «Теоретическая модель · не реальные измерения». Saving and reopening experiments is P1; do not mislabel the creation timestamp as a measurement timestamp.
+**Outputs:** interactive chart, exact table, interpretation, stated assumptions, and an explicit provenance badge. Saved research includes a custom title, configuration, optional hypothesis/conclusion, editing, and reproducible reopening; timestamps describe record changes, not algorithm timing.
 
-**Later (not MVP):** a real benchmark engine, actual instrumented algorithm runs, input generation, repeated timing, validation, Web Workers if truly necessary. The educational laboratory must be structured to swap data sources without redoing charts.
+The theoretical and instrumented providers share the same laboratory presentation contract, so charts and tables do not duplicate data-source logic. Repeated elapsed-time measurement and Web Workers remain later options only if a real research or responsiveness need justifies them.
 
 ## 8. Progress and persistence
 
@@ -104,11 +106,11 @@ Answers are evaluated by deterministic pure functions, with a meaningful explana
 
 **P0:** usable app layout; curriculum navigation; one end-to-end lesson then six lessons; pure model generator; free lab with real interactive inputs, correctly labeled theoretical charts/tables; deterministic exercise checking; local lesson progress; accessible, responsive experience.
 
-**P1:** saved explorations; review of mistakes; deeper unknown-algorithm classification exercises; polishing progress reports.
+**P1:** saved research records; review of mistakes; deeper unknown-algorithm classification exercises; polishing progress reports.
 
-**P2:** CSV/PDF export, more algorithm families, optional real-measurement mode.
+**P2:** CSV/PDF export, more algorithm families, and optional elapsed-time measurement.
 
-**Out of scope for MVP:** authentication, backend/API/database, arbitrary user code, Web Workers, real execution benchmarking, generated fake timings, marketing landing pages, elaborate animation and gamification.
+**Out of scope for the current UI:** authentication, backend/API/database, arbitrary user code, Web Workers, elapsed-time benchmarking, generated fake timings, marketing landing pages, elaborate animation and gamification.
 
 ## 10. Acceptance criteria
 
@@ -122,6 +124,8 @@ Answers are evaluated by deterministic pure functions, with a meaningful explana
 8. Wrong inputs and corrupted stored data fail gracefully.
 9. Every section works on desktop and mobile and keyboard interaction is possible.
 10. `pnpm lint`, `pnpm typecheck`, and `pnpm build` succeed (or blockers are documented honestly); key user flows are manually verified.
+11. Instrumented experiments reproduce the same exact counts from the same configuration and seed, without presenting counts as time.
+12. Version 1 saved explorations remain available after migration and can be edited as version 2 research records.
 
 ## 11. School research and evaluation
 
@@ -129,7 +133,7 @@ Answers are evaluated by deterministic pure functions, with a meaningful explana
 
 **Research hypothesis:** combining theory, model-based exploration and practical exercises may improve understanding compared with theory-only learning. Assess using pre-/post-tests with comparable questions, report sample size, method and limitations; never invent an educational effect.
 
-**Methodological limitation:** MVP charts visualize mathematical complexity models and are not empirical benchmark measurements. To substantiate claims of *experimental analysis of actual algorithms*, implement and document a real-measurement module before final school evaluation, or adjust the project title/claims to emphasize *interactive modeling of algorithmic complexity*.
+**Methodological limitation:** theoretical charts remain mathematical models. Instrumented charts execute trusted implementations and report exact counts under a declared counting model, but do not measure elapsed time or generalize to every implementation or device.
 
 ## 12. Delivery milestones
 
@@ -139,6 +143,8 @@ M2 — `/lab` configuration, model charts, tables and explanation.
 M3 — First complete theory → prediction → visualization → practice lesson.  
 M4 — Remaining lessons using the same lesson engine.  
 M5 — Progress/history, polish, accessibility and Vercel deployment.  
-M6 (optional, later) — Real computational experiments with proper methodology.
+M6a (implemented foundation) — Trusted instrumented algorithms, explicit counting rules, seeded inputs and safe synchronous limits.
+M6b (implemented) — Integrate exact operation counts and reproducible research records into the laboratory.
+M6c (optional, later) — Add elapsed-time experiments only with proper methodology.
 
 The product is successful when a learner can **independently determine and explain** the Big O of simple unfamiliar code, and use visual models appropriately without confusing them with measured performance.

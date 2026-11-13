@@ -1,64 +1,104 @@
 import { RotateCcw } from "lucide-react";
-import { type AlgorithmFamily, algorithmFamilies } from "@/entities/algorithm";
-import { Button } from "@/shared/ui";
+import { algorithmFamilies } from "@/entities/algorithm";
 import type {
-  ComparisonMode,
-  LabConfig,
-  SeriesDefinition,
-} from "../model/lab-config";
+  ComparisonSubject,
+  ExperimentAlgorithmFamily,
+  ExperimentSource,
+} from "@/entities/experiment";
+import type { ExperimentSeriesDefinition } from "@/features/run-experiment";
+import { Button } from "@/shared/ui";
+import type { LabConfig } from "../model/lab-config";
+import { InstrumentedSettings } from "./instrumented-settings";
 
 type ExperimentSettingsProps = {
   draft: LabConfig;
-  availableSeries: SeriesDefinition[];
+  availableSeries: ExperimentSeriesDefinition[];
+  maxInputSize: number;
   error: string;
-  onModeChange: (mode: ComparisonMode) => void;
-  onFamilyChange: (family: AlgorithmFamily) => void;
+  isPending: boolean;
+  onSourceChange: (source: ExperimentSource) => void;
+  onSubjectChange: (subject: ComparisonSubject) => void;
+  onFamilyChange: (family: ExperimentAlgorithmFamily) => void;
   onToggleSeries: (id: string) => void;
   onConfigChange: (patch: Partial<LabConfig>) => void;
   onApply: () => void;
   onReset: () => void;
 };
 
-function isAlgorithmFamily(value: string): value is AlgorithmFamily {
+function isAlgorithmFamily(value: string): value is ExperimentAlgorithmFamily {
   return value === "search" || value === "sorting";
 }
+
+const controlClass =
+  "mt-2 min-h-11 w-full rounded-lg border border-border-strong bg-app px-3 text-sm text-text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent";
 
 export function ExperimentSettings({
   draft,
   availableSeries,
+  maxInputSize,
   error,
-  onModeChange,
+  isPending,
+  onSourceChange,
+  onSubjectChange,
   onFamilyChange,
   onToggleSeries,
   onConfigChange,
   onApply,
   onReset,
 }: ExperimentSettingsProps) {
+  const hasBinarySearch = draft.selectedIds.includes("binary-search");
+  const isInstrumented = draft.source === "instrumented";
+
   return (
     <aside
-      className="border border-border bg-surface p-5"
+      className="rounded-xl border border-border bg-surface p-5"
       aria-labelledby="settings-heading"
     >
       <h2 id="settings-heading" className="text-base font-semibold">
-        Настройки эксперимента
+        Настройки исследования
       </h2>
       <fieldset className="mt-5">
-        <legend className="text-sm font-medium">Что сравниваем</legend>
+        <legend className="text-sm font-medium">Источник данных</legend>
         <div className="mt-2 grid grid-cols-2 gap-2">
-          {(["algorithms", "complexities"] as const).map((mode) => (
+          {(["theoretical", "instrumented"] as const).map((source) => (
             <button
-              key={mode}
+              key={source}
               type="button"
-              aria-pressed={draft.mode === mode}
-              onClick={() => onModeChange(mode)}
-              className={`min-h-10 rounded-lg border px-3 text-sm font-medium focus-visible:outline-2 focus-visible:outline-accent ${draft.mode === mode ? "border-accent bg-accent/10 text-text-primary" : "border-border-strong bg-app text-text-secondary"}`}
+              aria-pressed={draft.source === source}
+              onClick={() => onSourceChange(source)}
+              className={`min-h-11 rounded-lg border px-3 text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent ${draft.source === source ? "border-accent bg-accent/10 text-text-primary" : "border-border-strong bg-app text-text-secondary hover:bg-surface-raised"}`}
             >
-              {mode === "algorithms" ? "Алгоритмы" : "Классы Big O"}
+              {source === "theoretical" ? "Теория" : "Эксперимент"}
             </button>
           ))}
         </div>
+        <p className="mt-2 text-xs leading-5 text-text-muted">
+          {isInstrumented
+            ? "Встроенный TypeScript-код выполняется синхронно; считаются операции, а не миллисекунды."
+            : "Строятся учебные функции роста без запуска алгоритмов."}
+        </p>
       </fieldset>
-      {draft.mode === "algorithms" ? (
+
+      {!isInstrumented ? (
+        <fieldset className="mt-5 border-t border-border pt-5">
+          <legend className="text-sm font-medium">Что сравниваем</legend>
+          <div className="mt-2 grid grid-cols-2 gap-2">
+            {(["algorithms", "complexities"] as const).map((subject) => (
+              <button
+                key={subject}
+                type="button"
+                aria-pressed={draft.subject === subject}
+                onClick={() => onSubjectChange(subject)}
+                className={`min-h-11 rounded-lg border px-3 text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent ${draft.subject === subject ? "border-accent bg-accent/10 text-text-primary" : "border-border-strong bg-app text-text-secondary hover:bg-surface-raised"}`}
+              >
+                {subject === "algorithms" ? "Алгоритмы" : "Классы Big O"}
+              </button>
+            ))}
+          </div>
+        </fieldset>
+      ) : null}
+
+      {draft.subject === "algorithms" ? (
         <div className="mt-5">
           <label className="block text-sm font-medium" htmlFor="family">
             Семейство алгоритмов
@@ -70,7 +110,7 @@ export function ExperimentSettings({
               if (isAlgorithmFamily(event.target.value))
                 onFamilyChange(event.target.value);
             }}
-            className="mt-2 min-h-10 w-full rounded-lg border border-border-strong bg-app px-3 text-sm text-text-primary focus-visible:outline-2 focus-visible:outline-accent"
+            className={controlClass}
           >
             {algorithmFamilies.map((family) => (
               <option key={family.id} value={family.id}>
@@ -80,12 +120,13 @@ export function ExperimentSettings({
           </select>
         </div>
       ) : null}
+
       <fieldset className="mt-5">
         <legend className="text-sm font-medium">
-          {draft.mode === "algorithms" ? "Алгоритмы" : "Модели сложности"}
+          {draft.subject === "algorithms" ? "Алгоритмы" : "Модели сложности"}
         </legend>
         <p className="mt-1 text-xs leading-5 text-text-muted">
-          Можно выбрать несколько вариантов для сравнения.
+          Выберите один или несколько рядов для честного сравнения.
         </p>
         <div className="mt-3 space-y-1.5">
           {availableSeries.map((series) => (
@@ -105,9 +146,7 @@ export function ExperimentSettings({
                 style={{ backgroundColor: series.color }}
               />
               <span className="min-w-0">
-                <span className="block truncate text-text-primary">
-                  {series.label}
-                </span>
+                <span className="block text-text-primary">{series.label}</span>
                 <span className="font-mono text-xs text-text-muted">
                   {series.complexity}
                 </span>
@@ -116,89 +155,73 @@ export function ExperimentSettings({
           ))}
         </div>
       </fieldset>
+
+      {isInstrumented ? (
+        <InstrumentedSettings
+          draft={draft}
+          hasBinarySearch={hasBinarySearch}
+          onConfigChange={onConfigChange}
+        />
+      ) : null}
+
       <div className="mt-6 border-t border-border pt-5">
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label className="block text-sm font-medium" htmlFor="min-size">
               Минимум n
             </label>
-            <p
-              id="min-size-hint"
-              className="mt-1 text-xs leading-4 text-text-muted"
-            >
-              Начальный размер входа.
-            </p>
             <input
               id="min-size"
-              aria-describedby="min-size-hint"
               type="number"
               min="1"
-              max="490"
+              max={maxInputSize - 1}
               value={draft.minSize}
               onChange={(event) =>
                 onConfigChange({ minSize: Number(event.target.value) })
               }
-              className="mt-2 min-h-10 w-full rounded-lg border border-border-strong bg-app px-3 font-mono text-sm focus-visible:outline-2 focus-visible:outline-accent"
+              className={`${controlClass} font-mono`}
             />
           </div>
           <div>
-            <label className="block text-sm font-medium" htmlFor="samples">
-              Кол-во точек
+            <label className="block text-sm font-medium" htmlFor="max-size">
+              Максимум n
             </label>
-            <p
-              id="samples-hint"
-              className="mt-1 text-xs leading-4 text-text-muted"
-            >
-              Кол-во значений на графике.
-            </p>
-            <select
-              id="samples"
-              aria-describedby="samples-hint"
-              value={draft.samples}
+            <input
+              id="max-size"
+              type="number"
+              min="2"
+              max={maxInputSize}
+              value={draft.maxSize}
               onChange={(event) =>
-                onConfigChange({ samples: Number(event.target.value) })
+                onConfigChange({ maxSize: Number(event.target.value) })
               }
-              className="mt-2 min-h-10 w-full rounded-lg border border-border-strong bg-app px-3 text-sm focus-visible:outline-2 focus-visible:outline-accent"
-            >
-              {[5, 7, 10, 12].map((count) => (
-                <option key={count} value={count}>
-                  {count}
-                </option>
-              ))}
-            </select>
+              className={`${controlClass} font-mono`}
+            />
           </div>
         </div>
-        <label className="mt-4 block text-sm font-medium" htmlFor="max-size">
-          Максимум n
-        </label>
-        <p
-          id="max-size-hint"
-          className="mt-1 text-xs leading-4 text-text-muted"
-        >
-          Конечный размер входа.
+        <p className="mt-2 text-xs text-text-muted">
+          Безопасный предел для выбранных алгоритмов:{" "}
+          {maxInputSize.toLocaleString("ru-RU")}.
         </p>
-        <div className="mt-3 flex items-center gap-3">
-          <input
-            id="max-size"
-            aria-describedby="max-size-hint"
-            type="range"
-            min="40"
-            max="500"
-            step="10"
-            value={draft.maxSize}
-            onChange={(event) =>
-              onConfigChange({ maxSize: Number(event.target.value) })
-            }
-            className="min-w-0 flex-1 accent-[#4cc9a6]"
-          />
-          <output
-            htmlFor="max-size"
-            className="w-16 rounded-md border border-border-strong bg-app px-2 py-1.5 text-right font-mono text-xs"
-          >
-            {draft.maxSize}
-          </output>
-        </div>
+        <label className="mt-4 block text-sm font-medium" htmlFor="samples">
+          Количество точек
+        </label>
+        <select
+          id="samples"
+          value={draft.samples}
+          onChange={(event) =>
+            onConfigChange({ samples: Number(event.target.value) })
+          }
+          className={controlClass}
+        >
+          {[5, 7, 10, 12].map((count) => (
+            <option key={count} value={count}>
+              {count}
+            </option>
+          ))}
+        </select>
       </div>
+
       {error ? (
         <p
           role="alert"
@@ -207,8 +230,17 @@ export function ExperimentSettings({
           {error}
         </p>
       ) : null}
-      <Button type="button" onClick={onApply} className="mt-5 w-full">
-        Построить сравнение
+      <Button
+        type="button"
+        onClick={onApply}
+        disabled={isPending}
+        className="mt-5 w-full"
+      >
+        {isPending
+          ? "Обновляем…"
+          : isInstrumented
+            ? "Запустить эксперимент"
+            : "Построить модель"}
       </Button>
       <Button
         type="button"

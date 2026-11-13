@@ -6,11 +6,39 @@ import {
   readSavedExplorations,
   writeSavedExplorations,
 } from "./storage";
-import type { SavedExploration, SavedExplorationConfig } from "./types";
+import type {
+  SavedExploration,
+  SavedExplorationConfig,
+  SavedResearchInput,
+} from "./types";
 
 function createExplorationId(): string {
   if (typeof crypto.randomUUID === "function") return crypto.randomUUID();
   return `exploration-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+}
+
+function copyConfig(config: SavedExplorationConfig): SavedExplorationConfig {
+  return { ...config, selectedIds: [...config.selectedIds] };
+}
+
+function normalizeInput(input: SavedResearchInput): SavedResearchInput {
+  const hypothesis = input.hypothesis?.trim();
+  const conclusion = input.conclusion?.trim();
+  return {
+    title: input.title.trim(),
+    config: copyConfig(input.config),
+    ...(hypothesis ? { hypothesis } : {}),
+    ...(conclusion ? { conclusion } : {}),
+  };
+}
+
+function isValidResearchInput(input: SavedResearchInput): boolean {
+  return (
+    input.title.length > 0 &&
+    input.title.length <= 80 &&
+    (input.hypothesis?.length ?? 0) <= 2_000 &&
+    (input.conclusion?.length ?? 0) <= 2_000
+  );
 }
 
 export function useSavedExplorations() {
@@ -31,11 +59,21 @@ export function useSavedExplorations() {
   }, []);
 
   const save = useCallback(
-    (config: SavedExplorationConfig): SavedExploration | null => {
+    (input: SavedResearchInput): SavedExploration | null => {
+      const normalized = normalizeInput(input);
+      if (!isValidResearchInput(normalized)) {
+        setStorageError("Проверьте название и длину заметок исследования.");
+        return null;
+      }
+      const now = new Date().toISOString();
       const item: SavedExploration = {
         id: createExplorationId(),
-        createdAt: new Date().toISOString(),
-        config: { ...config, selectedIds: [...config.selectedIds] },
+        title: normalized.title,
+        createdAt: now,
+        updatedAt: now,
+        config: normalized.config,
+        ...(normalized.hypothesis ? { hypothesis: normalized.hypothesis } : {}),
+        ...(normalized.conclusion ? { conclusion: normalized.conclusion } : {}),
       };
       const next = [item, ...items].slice(0, 20);
       try {
@@ -47,6 +85,37 @@ export function useSavedExplorations() {
         setStorageError(
           "Не удалось сохранить исследование. Проверьте доступ к локальному хранилищу.",
         );
+        return null;
+      }
+    },
+    [items],
+  );
+
+  const update = useCallback(
+    (id: string, input: SavedResearchInput): SavedExploration | null => {
+      const current = items.find((item) => item.id === id);
+      if (!current) return null;
+      const normalized = normalizeInput(input);
+      if (!isValidResearchInput(normalized)) {
+        setStorageError("Проверьте название и длину заметок исследования.");
+        return null;
+      }
+      const updated: SavedExploration = {
+        ...current,
+        title: normalized.title,
+        updatedAt: new Date().toISOString(),
+        config: normalized.config,
+        hypothesis: normalized.hypothesis,
+        conclusion: normalized.conclusion,
+      };
+      const next = items.map((item) => (item.id === id ? updated : item));
+      try {
+        writeSavedExplorations(next);
+        setItems(next);
+        setStorageError(null);
+        return updated;
+      } catch {
+        setStorageError("Не удалось обновить сохранённое исследование.");
         return null;
       }
     },
@@ -77,5 +146,13 @@ export function useSavedExplorations() {
     }
   }, []);
 
-  return { items, hydrated, storageError, save, remove, clear };
+  return {
+    items,
+    hydrated,
+    storageError,
+    save,
+    update,
+    remove,
+    clear,
+  };
 }

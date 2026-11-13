@@ -4,6 +4,7 @@ import { ArrowRight, FlaskConical, Trash2 } from "lucide-react";
 import { useState } from "react";
 import {
   describeExploration,
+  describeExplorationDetails,
   formatExplorationDate,
   type SavedExploration,
 } from "@/features/manage-saved-explorations";
@@ -37,7 +38,7 @@ export function SavedExplorationsReport({
           </h2>
           <p className="mt-1 text-sm leading-6 text-text-secondary">
             Конфигурации хранятся только в этом браузере. Дата ниже означает
-            момент сохранения, а не измерения алгоритма.
+            момент обновления записи, а не время выполнения алгоритма.
           </p>
         </div>
       </div>
@@ -68,13 +69,13 @@ export function SavedExplorationsReport({
                 className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center"
               >
                 <div className="min-w-0 flex-1">
-                  <p className="font-medium">
+                  <p className="font-medium">{item.title}</p>
+                  <p className="mt-1 text-xs font-medium text-accent">
                     {describeExploration(item.config)}
                   </p>
                   <p className="mt-1 text-xs leading-5 text-text-muted">
-                    n: {item.config.minSize}–{item.config.maxSize} ·{" "}
-                    {item.config.samples} точек · сохранено{" "}
-                    {formatExplorationDate(item.createdAt)}
+                    {describeExplorationDetails(item.config)} · обновлено{" "}
+                    {formatExplorationDate(item.updatedAt)}
                   </p>
                 </div>
                 <div className="flex gap-2">
@@ -89,7 +90,7 @@ export function SavedExplorationsReport({
                     type="button"
                     onClick={() => onRemove(item.id)}
                     className="grid min-h-11 min-w-11 place-items-center rounded-lg border border-border-strong bg-app text-text-secondary hover:border-error hover:text-error focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
-                    aria-label={`Удалить: ${describeExploration(item.config)}`}
+                    aria-label={`Удалить исследование «${item.title}»`}
                   >
                     <Trash2 size={16} />
                   </button>

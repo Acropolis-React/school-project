@@ -8,51 +8,59 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import type { LabPoint, SeriesDefinition } from "../model/lab-config";
+import {
+  getMetricLabel,
+  type LabExperimentResult,
+} from "@/features/run-experiment";
 
-const formatter = new Intl.NumberFormat("ru-RU", {
+const compactFormatter = new Intl.NumberFormat("ru-RU", {
   notation: "compact",
   maximumFractionDigits: 1,
 });
 
 type ExperimentChartProps = {
-  points: LabPoint[];
-  series: SeriesDefinition[];
-  resultKind: string;
+  result: LabExperimentResult;
 };
 
-export function ExperimentChart({
-  points,
-  series,
-  resultKind,
-}: ExperimentChartProps) {
+export function ExperimentChart({ result }: ExperimentChartProps) {
+  const isInstrumented = result.source === "instrumented";
+  const chartTitle = isInstrumented
+    ? "Фактические операции алгоритмов"
+    : "Теоретический рост";
+  const yAxisShortLabel =
+    result.metric === "model-value"
+      ? "Условные единицы"
+      : getMetricLabel(result.metric);
+
   return (
     <section
-      className="flex h-full flex-col border border-border bg-surface p-4 sm:p-5"
+      className="flex h-full min-w-0 flex-col rounded-xl border border-border bg-surface p-4 sm:p-5"
       aria-labelledby="chart-heading"
     >
-      <div className="flex flex-col gap-2 border-b border-border pb-4 sm:flex-row sm:items-start sm:justify-between">
+      <div className="flex flex-col gap-3 border-b border-border pb-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h2 id="chart-heading" className="font-semibold">
-            Теоретический рост {resultKind}
+            {chartTitle}
           </h2>
-          <p className="mt-1 text-xs text-text-muted">
-            Ось X — размер входа n · ось Y — модельное значение, усл. ед.
+          <p className="mt-1 text-xs leading-5 text-text-muted">
+            Ось X — размер входа n · ось Y — {result.yAxisLabel.toLowerCase()}
           </p>
         </div>
-        <span className="text-xs font-medium text-accent">
-          Теоретическая модель · не реальные измерения
+        <span
+          className={`max-w-xs text-xs font-medium leading-5 ${isInstrumented ? "text-warning" : "text-accent"}`}
+        >
+          {result.disclosure}
         </span>
       </div>
       <div
-        className="mt-4 h-[310px] w-full sm:h-[400px] xl:h-auto xl:min-h-[400px] xl:flex-1"
+        className="mt-4 h-[340px] w-full sm:h-[420px] xl:h-auto xl:min-h-[420px] xl:flex-1"
         role="img"
-        aria-label={`Линейный график теоретического роста ${resultKind}`}
+        aria-label={`${chartTitle}. ${result.yAxisLabel} в зависимости от размера входа n.`}
       >
         <ResponsiveContainer width="100%" height="100%">
           <LineChart
-            data={points}
-            margin={{ top: 8, right: 12, left: -8, bottom: 8 }}
+            data={result.points}
+            margin={{ top: 8, right: 12, left: 8, bottom: 12 }}
           >
             <CartesianGrid
               stroke="#263141"
@@ -68,19 +76,27 @@ export function ExperimentChart({
               label={{
                 value: "Размер входа n",
                 position: "insideBottom",
-                offset: -4,
+                offset: -6,
                 fill: "#94a3b8",
                 fontSize: 12,
               }}
-              height={42}
+              height={46}
             />
             <YAxis
               stroke="#718096"
               tickLine={false}
               axisLine={false}
               tick={{ fill: "#94a3b8", fontSize: 12 }}
-              tickFormatter={(value: number) => formatter.format(value)}
-              width={58}
+              tickFormatter={(value: number) => compactFormatter.format(value)}
+              label={{
+                value: yAxisShortLabel,
+                angle: -90,
+                position: "insideLeft",
+                fill: "#94a3b8",
+                fontSize: 11,
+              }}
+              width={74}
+              allowDecimals={false}
             />
             <Tooltip
               contentStyle={{
@@ -90,22 +106,25 @@ export function ExperimentChart({
                 fontSize: 12,
               }}
               labelStyle={{ color: "#e6edf3" }}
+              labelFormatter={(label) => `Размер входа n = ${label}`}
               formatter={(value, name) => [
                 Number(value).toLocaleString("ru-RU"),
-                series.find((item) => item.id === name)?.shortLabel ?? name,
+                result.series.find((item) => item.id === name)?.shortLabel ??
+                  name,
               ]}
             />
             <Legend
               iconType="plainline"
               wrapperStyle={{ fontSize: 12, paddingTop: 8 }}
               formatter={(value) =>
-                series.find((item) => item.id === value)?.shortLabel ?? value
+                result.series.find((item) => item.id === value)?.shortLabel ??
+                value
               }
             />
-            {series.map((item) => (
+            {result.series.map((item) => (
               <Line
                 key={item.id}
-                type="monotone"
+                type="linear"
                 dataKey={item.id}
                 stroke={item.color}
                 strokeWidth={2.2}

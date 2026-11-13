@@ -1,16 +1,20 @@
-import type { AlgorithmFamily } from "@/entities/algorithm";
+import type { LabExperimentConfig } from "@/entities/experiment";
 
-export type SavedExplorationConfig = {
-  mode: "algorithms" | "complexities";
-  family: AlgorithmFamily;
-  selectedIds: string[];
-  minSize: number;
-  maxSize: number;
-  samples: number;
+export type SavedExplorationConfig = LabExperimentConfig;
+
+export type SavedResearchInput = {
+  title: string;
+  hypothesis?: string;
+  conclusion?: string;
+  config: SavedExplorationConfig;
 };
 
 export type SavedExploration = {
   id: string;
+  title: string;
   createdAt: string;
+  updatedAt: string;
+  hypothesis?: string;
+  conclusion?: string;
   config: SavedExplorationConfig;
 };

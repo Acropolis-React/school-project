@@ -15,13 +15,14 @@
 | Architecture | Feature-Sliced Design (adapted naming for Next.js) |
 | Package manager | pnpm |
 | Validation | Biome (`pnpm lint`), TypeScript (`pnpm typecheck`), production build (`pnpm build`) |
-| Initial data source | Typed deterministic simulation fixtures |
+| UI data source | Typed deterministic theoretical simulations |
+| Algorithm engine | Synchronous TypeScript execution with exact instrumented operation counts |
 | Persistence | Browser localStorage for learning progress and saved laboratory configurations |
 | Deployment | Vercel |
 
-The initial milestone is a **working educational UI**, with guided lessons, exercises, a laboratory interface, and charts using clearly labeled simulated data. No dedicated backend, database, authentication, Web Worker, arbitrary code execution, or server-side benchmarking is required in this milestone.
+The educational UI uses guided lessons, exercises, and a dual-source laboratory. The theoretical mode remains clearly labeled as simulated data; the experimental mode executes the five trusted built-in algorithms and displays exact operation counts under the documented counting model. No dedicated backend, database, authentication, Web Worker, arbitrary code execution, or elapsed-time benchmarking is used.
 
-The long-term learning goal remains understanding Big O through theory, hypotheses, practical tasks, and (eventually) actual computation. Simulated numbers are **not empirical measurements** and must never be represented as such.
+The learning goal remains understanding Big O through theory, hypotheses, practical tasks, and actual computation through the bounded engine. Simulated numbers are **not empirical measurements** and must never be represented as such.
 
 ## 2. Adapted FSD layers
 
@@ -109,7 +110,8 @@ algolab/
 │   │       └── index.ts
 │   ├── entities/
 │   │   ├── algorithm/
-│   │   │   ├── model/                     # IDs, metadata, complexity and limitations
+│   │   │   ├── model/                     # IDs, metadata, execution contracts and limits
+│   │   │   ├── lib/engine/                # Instrumented algorithms and seeded inputs
 │   │   │   └── index.ts
 │   │   ├── experiment/
 │   │   │   ├── model/                     # Config, result, series and status types
@@ -162,7 +164,7 @@ FSD view (src/views)
           ↓
 Feature interaction (configure/run/answer)
           ↓
-Typed experiment data source (simulated for MVP)
+Typed experiment data source (theoretical model or instrumented execution)
           ↓
 Recharts plot + tabular data + educational explanation
           ↓
@@ -200,7 +202,7 @@ type ExperimentResult = {
 };
 ```
 
-These are conceptual shapes; refine them only when a real implementation requires it. The view should not know whether results come from simulated data or from a future benchmarking engine. Keep data-provider decisions in `features/run-experiment`, and typed experiment data/models in `entities/experiment`.
+These are conceptual shapes; refine them only when a real implementation requires it. The view should not know whether results come from simulated data or from a future measured-data provider backed by the algorithm engine. Keep data-provider decisions in `features/run-experiment`, and typed experiment data/models in `entities/experiment`.
 
 **Simulation rules:**
 
@@ -214,11 +216,23 @@ These are conceptual shapes; refine them only when a real implementation require
 
 This approach enables frontend validation without premature worker/benchmarking complexity. **Before claiming the project experimentally measured real algorithms**, implement and validate a genuine measurement mode.
 
-### Future real-measurement phase (not MVP)
+### Instrumented algorithm engine
 
-The data-provider contract must allow a later implementation that executes trusted TypeScript algorithms, counts explicitly defined operations, and measures actual elapsed time. Begin with bounded, synchronous browser execution for small safe inputs if adequate; add a dedicated Web Worker only when expensive runs or responsiveness require it. Preserve the same chart and lesson UI. Use seeded identical inputs for fair comparisons, repetitions for time measurements, correctness checks, input constraints and a cancellation mechanism.
+The domain-level algorithm engine executes the trusted TypeScript implementations of linear search, binary search, bubble sort, insertion sort, and merge sort. It is synchronous, React-independent, bounded, deterministic, and exported only through the `entities/algorithm` public API. Binary search validates its sorted-input precondition. All executions work on a copy and never mutate the caller's array.
 
-Do not create Web Worker files, messaging protocols, RPC wrappers, fake progress bars, or complex concurrency orchestration now.
+Operation counting follows one versioned model:
+
+- a comparison is a value-to-value relational check performed by the algorithm;
+- a swap is an explicit exchange of two positions in the input array;
+- reads and writes include both the input and merge sort's auxiliary array;
+- total operations are comparisons + reads + writes, with swaps excluded from the sum because their reads and writes are already counted;
+- loop/index bookkeeping, recursion, allocation, validation, copying, generation, and result copying are not counted.
+
+Optional operation traces are emitted by the same instrumented implementations, so a future step visualizer does not need parallel algorithm code. Trace capture has a smaller input bound than count-only execution. Quadratic sorts also have a stricter input limit than search and merge sort.
+
+Seeded generators return unique safe integers from `0` through `n - 1`: random inputs are shuffled permutations, sorted and reverse-sorted inputs use the corresponding order, and nearly sorted inputs apply a bounded deterministic set of adjacent swaps. Search fixtures can place an existing target first, in the middle, last, or at a seeded random index, or select a guaranteed-missing target. Generator metadata records the seed, shape, and applied perturbation count.
+
+The laboratory now exposes the engine through `features/run-experiment` as an explicitly labeled operation-count mode. It generates identical seeded inputs for compared algorithms, validates binary search's sorted-input requirement, and regenerates exact points from configuration. The theoretical provider remains separate and continues to return model values only. Elapsed-time benchmarks, repetitions, cancellation, Web Workers, messaging protocols, and concurrency orchestration remain out of scope.
 
 ## 5. Lessons and exercises
 
@@ -239,7 +253,7 @@ Do not create Web Worker files, messaging protocols, RPC wrappers, fake progress
 - The learning-progress payload is currently schema version 2. Version 1 answer records are migrated without fabricated question details, so aggregate statistics remain available while only resolvable version 2 records appear in mistake review.
 - Do not treat progress saved in localStorage as portable across devices.
 - Avoid persisting huge charts or input arrays; save compact settings and results only if history is explicitly implemented.
-- Saved explorations use their own versioned, bounded store (maximum 20 items). Only validated configurations and creation timestamps are persisted; deterministic model points are regenerated when a saved exploration is reopened.
+- Saved explorations use their own versioned, bounded store (maximum 20 items). Schema version 2 stores a custom title, optional hypothesis/conclusion, timestamps, and a validated reproducible configuration; generated arrays and chart points are never persisted. Valid version 1 configuration-only records migrate to theoretical version 2 records and remain editable.
 
 ## 7. UI / UX rules
 
@@ -274,6 +288,6 @@ Before declaring a coding task complete, run `pnpm lint`, `pnpm typecheck`, and 
 5. Implement the mock-backed experiment contract and functional lab charts/table with transparent labeling.
 6. Connect experiments inside lessons, exercises and progress persistence.
 7. Complete the planned lesson set, manually verify behavior, refine UX and deploy to Vercel.
-8. **Later, optional:** replace simulation with actual instrumented execution; only add Web Workers if they solve demonstrated responsiveness problems.
+8. **Later, optional:** add elapsed-time measurement only with a sound methodology; add Web Workers only if they solve demonstrated responsiveness problems.
 
-When a task conflicts with the target tree, favor **minimal modifications to the actual repo** rather than wholesale restructuring. Keep `product.md` and `AGENTS.md` aligned with the MVP simulation decision when those files are next edited.
+When a task conflicts with the target tree, favor **minimal modifications to the actual repo** rather than wholesale restructuring. Keep the theoretical and instrumented data sources explicitly separated in product claims and UI copy.

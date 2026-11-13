@@ -1,19 +1,35 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { AlgorithmFamily } from "@/entities/algorithm";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useTransition,
+} from "react";
+import type {
+  ComparisonSubject,
+  ExperimentAlgorithmFamily,
+  ExperimentSource,
+} from "@/entities/experiment";
 import {
   type SavedExploration,
   useSavedExplorations,
 } from "@/features/manage-saved-explorations";
 import {
-  type ComparisonMode,
+  getAvailableExperimentSeries,
+  getMaximumInputSize,
+  runExperiment,
+  validateExperimentConfig,
+} from "@/features/run-experiment";
+import {
+  copyLabConfig,
   defaultConfig,
   defaultIds,
-  generatePoints,
-  getAvailableSeries,
-  getSelectedSeries,
+  emptyResearch,
   type LabConfig,
+  type ResearchFields,
 } from "../model/lab-config";
 import { ExperimentChart } from "./experiment-chart";
 import { ExperimentResults } from "./experiment-results";
@@ -24,25 +40,32 @@ export function ExperimentWorkspace() {
   const [draft, setDraft] = useState<LabConfig>(defaultConfig);
   const [config, setConfig] = useState<LabConfig>(defaultConfig);
   const [error, setError] = useState("");
+  const [researchError, setResearchError] = useState("");
   const [notice, setNotice] = useState("");
+  const [research, setResearch] = useState<ResearchFields>(emptyResearch);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
   const requestedExplorationHandled = useRef(false);
   const savedExplorations = useSavedExplorations();
-  const availableSeries = getAvailableSeries(draft);
-  const selectedSeries = useMemo(() => getSelectedSeries(config), [config]);
-  const points = useMemo(
-    () => generatePoints(config, selectedSeries),
-    [config, selectedSeries],
-  );
+  const availableSeries = getAvailableExperimentSeries(draft);
+  const maxInputSize = getMaximumInputSize(draft);
+  const result = useMemo(() => runExperiment(config), [config]);
 
   const openSaved = useCallback((item: SavedExploration) => {
-    const restored = {
-      ...item.config,
-      selectedIds: [...item.config.selectedIds],
-    };
+    const restored = copyLabConfig(item.config);
     setDraft(restored);
     setConfig(restored);
+    setResearch({
+      title: item.title,
+      hypothesis: item.hypothesis ?? "",
+      conclusion: item.conclusion ?? "",
+    });
+    setEditingId(item.id);
     setError("");
-    setNotice("Сохранённая конфигурация открыта.");
+    setResearchError("");
+    setNotice(
+      "Исследование открыто. Измените настройки или заметки и сохраните обновление.",
+    );
   }, []);
 
   useEffect(() => {
@@ -62,71 +85,161 @@ export function ExperimentWorkspace() {
     else setError("Сохранённое исследование не найдено или было удалено.");
   }, [savedExplorations.hydrated, savedExplorations.items, openSaved]);
 
-  const setMode = (mode: ComparisonMode) => {
+  const setSource = (source: ExperimentSource) => {
+    setDraft((current) => {
+      const subject =
+        source === "instrumented" ? "algorithms" : current.subject;
+      const selectedIds =
+        subject === current.subject
+          ? current.selectedIds
+          : defaultIds(subject, current.family);
+      const next: LabConfig = {
+        ...current,
+        source,
+        subject,
+        selectedIds,
+        distribution:
+          source === "instrumented" && selectedIds.includes("binary-search")
+            ? "sorted"
+            : current.distribution,
+      };
+      return {
+        ...next,
+        maxSize: Math.min(next.maxSize, getMaximumInputSize(next)),
+      };
+    });
+    setError("");
+    setNotice("");
+  };
+
+  const setSubject = (subject: ComparisonSubject) => {
     setDraft((current) => ({
       ...current,
-      mode,
-      selectedIds: defaultIds(mode, current.family),
+      subject,
+      selectedIds: defaultIds(subject, current.family),
     }));
     setError("");
     setNotice("");
   };
 
-  const setFamily = (family: AlgorithmFamily) => {
-    setDraft((current) => ({
-      ...current,
-      family,
-      selectedIds: defaultIds("algorithms", family),
-    }));
+  const setFamily = (family: ExperimentAlgorithmFamily) => {
+    setDraft((current) => {
+      const next: LabConfig = {
+        ...current,
+        family,
+        selectedIds: defaultIds("algorithms", family),
+        distribution: family === "search" ? "sorted" : current.distribution,
+      };
+      return {
+        ...next,
+        maxSize: Math.min(next.maxSize, getMaximumInputSize(next)),
+      };
+    });
     setError("");
     setNotice("");
   };
 
   const toggleSeries = (id: string) => {
-    setDraft((current) => ({
-      ...current,
-      selectedIds: current.selectedIds.includes(id)
+    setDraft((current) => {
+      const selectedIds = current.selectedIds.includes(id)
         ? current.selectedIds.filter((seriesId) => seriesId !== id)
-        : [...current.selectedIds, id],
-    }));
+        : [...current.selectedIds, id];
+      const next: LabConfig = {
+        ...current,
+        selectedIds,
+        distribution: selectedIds.includes("binary-search")
+          ? "sorted"
+          : current.distribution,
+      };
+      return {
+        ...next,
+        maxSize: Math.min(next.maxSize, getMaximumInputSize(next)),
+      };
+    });
+    setError("");
   };
 
   const apply = () => {
-    if (draft.selectedIds.length === 0) {
-      setError(
-        draft.mode === "algorithms"
-          ? "Выберите хотя бы один алгоритм."
-          : "Выберите хотя бы один класс сложности.",
-      );
-      return;
-    }
-    if (
-      !Number.isInteger(draft.minSize) ||
-      draft.minSize < 1 ||
-      draft.maxSize <= draft.minSize
-    ) {
-      setError("Укажите целый диапазон: от 1, а максимум — больше минимума.");
+    const validationError = validateExperimentConfig(draft);
+    if (validationError) {
+      setError(validationError.message);
       return;
     }
     setError("");
-    setConfig(draft);
-    setNotice("Сравнение обновлено.");
+    setNotice(
+      draft.source === "instrumented"
+        ? "Эксперимент выполнен: показаны точные счётчики операций."
+        : "Теоретическая модель обновлена.",
+    );
+    startTransition(() => setConfig(copyLabConfig(draft)));
   };
 
   const reset = () => {
-    setDraft(defaultConfig);
-    setConfig(defaultConfig);
+    setDraft(copyLabConfig(defaultConfig));
+    setConfig(copyLabConfig(defaultConfig));
     setError("");
     setNotice("Настройки возвращены к исходным.");
   };
 
-  const saveCurrent = () => {
-    const saved = savedExplorations.save(config);
-    if (saved) setNotice("Исследование сохранено в этом браузере.");
+  const persistResearch = () => {
+    const title = research.title.trim();
+    if (!title) {
+      setResearchError("Введите название исследования перед сохранением.");
+      return;
+    }
+    if (title.length > 80) {
+      setResearchError(
+        "Название исследования должно быть не длиннее 80 символов.",
+      );
+      return;
+    }
+    if (
+      research.hypothesis.length > 2_000 ||
+      research.conclusion.length > 2_000
+    ) {
+      setResearchError(
+        "Гипотеза и вывод должны быть не длиннее 2000 символов каждый.",
+      );
+      return;
+    }
+
+    const input = {
+      title,
+      hypothesis: research.hypothesis,
+      conclusion: research.conclusion,
+      config,
+    };
+    const saved = editingId
+      ? savedExplorations.update(editingId, input)
+      : savedExplorations.save(input);
+    if (!saved) {
+      setResearchError(
+        editingId
+          ? "Не удалось обновить исследование."
+          : "Не удалось сохранить исследование.",
+      );
+      return;
+    }
+    setEditingId(saved.id);
+    setResearchError("");
+    setNotice(
+      editingId
+        ? "Исследование обновлено."
+        : "Исследование сохранено в этом браузере.",
+    );
   };
 
-  const resultKind =
-    config.mode === "algorithms" ? "алгоритмов" : "классов сложности";
+  const stopEditing = () => {
+    setEditingId(null);
+    setResearch(emptyResearch);
+    setResearchError("");
+    setNotice("Можно сохранить текущий результат как новое исследование.");
+  };
+
+  const removeSaved = (id: string) => {
+    savedExplorations.remove(id);
+    if (editingId === id) stopEditing();
+  };
 
   return (
     <div className="space-y-5">
@@ -142,8 +255,11 @@ export function ExperimentWorkspace() {
         <ExperimentSettings
           draft={draft}
           availableSeries={availableSeries}
+          maxInputSize={maxInputSize}
           error={error}
-          onModeChange={setMode}
+          isPending={isPending}
+          onSourceChange={setSource}
+          onSubjectChange={setSubject}
           onFamilyChange={setFamily}
           onToggleSeries={toggleSeries}
           onConfigChange={(patch) =>
@@ -152,24 +268,24 @@ export function ExperimentWorkspace() {
           onApply={apply}
           onReset={reset}
         />
-        <ExperimentChart
-          points={points}
-          series={selectedSeries}
-          resultKind={resultKind}
-        />
+        <ExperimentChart result={result} />
       </div>
-      <ExperimentResults
-        points={points}
-        series={selectedSeries}
-        resultKind={resultKind}
-      />
+      <ExperimentResults result={result} />
       <SavedExplorationsPanel
         items={savedExplorations.items}
         hydrated={savedExplorations.hydrated}
         storageError={savedExplorations.storageError}
-        onSave={saveCurrent}
+        researchError={researchError}
+        research={research}
+        editingId={editingId}
+        onResearchChange={(patch) => {
+          setResearch((current) => ({ ...current, ...patch }));
+          setResearchError("");
+        }}
+        onPersist={persistResearch}
+        onCancelEditing={stopEditing}
         onOpen={openSaved}
-        onRemove={savedExplorations.remove}
+        onRemove={removeSaved}
       />
     </div>
   );

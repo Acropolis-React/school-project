@@ -23,3 +23,43 @@ export type ExperimentConfig = {
 export type ExperimentPoint = { inputSize: number } & Partial<
   Record<ComplexityId, number>
 >;
+
+export type ExperimentSource = "theoretical" | "instrumented";
+
+export type ComparisonSubject = "algorithms" | "complexities";
+
+export type ExperimentAlgorithmFamily = "search" | "sorting";
+
+export type InputDistribution =
+  | "random"
+  | "sorted"
+  | "reverse-sorted"
+  | "nearly-sorted";
+
+export type OperationMetric =
+  | "total"
+  | "comparisons"
+  | "swaps"
+  | "arrayReads"
+  | "arrayWrites";
+
+export type ExperimentTargetPosition =
+  | "first"
+  | "middle"
+  | "last"
+  | "random"
+  | "missing";
+
+export type LabExperimentConfig = {
+  source: ExperimentSource;
+  subject: ComparisonSubject;
+  family: ExperimentAlgorithmFamily;
+  selectedIds: string[];
+  minSize: number;
+  maxSize: number;
+  samples: number;
+  distribution: InputDistribution;
+  metric: OperationMetric;
+  seed: number;
+  targetPosition: ExperimentTargetPosition;
+};
