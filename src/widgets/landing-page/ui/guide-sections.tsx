@@ -135,7 +135,7 @@ export function Walkthrough() {
         <div>
           <AppScreenshot
             name="lab"
-            alt="График теоретического роста в лаборатории AlgoLab"
+            alt="График теоретической модели в лаборатории AlgoLab"
           />
           <p className="mt-3 text-xs leading-5 text-text-muted">
             Лаборатория показывает график и таблицу для выбранных настроек.

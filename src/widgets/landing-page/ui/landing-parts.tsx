@@ -30,6 +30,12 @@ export function Hero() {
           AlgoLab соединяет короткие уроки о Big O, задачи и лабораторию.
           Изучайте код, сравнивайте модели и проверяйте свои выводы.
         </p>
+        <div className="mt-5 max-w-xl rounded-lg border border-border-strong bg-surface-raised px-4 py-3 text-sm leading-6">
+          <p className="font-semibold">Перед началом</p>
+          <p className="mt-1 text-text-secondary">
+            Примеры и задания в уроках используют код на C++.
+          </p>
+        </div>
         <div className="mt-6 flex flex-wrap gap-3">
           <Link href="/learn/what-is-big-o" className={primary}>
             Начать первый урок
@@ -61,18 +67,18 @@ export function AppScreenshot({
   priority = false,
 }: ScreenshotProps) {
   return (
-    <picture
-      className={`block aspect-[390/844] overflow-hidden rounded-xl border border-border ${name === "lab" ? "lg:aspect-[4/3]" : "lg:aspect-[8/5]"}`}
-    >
+    <picture className="block overflow-hidden rounded-xl border border-border">
       <source
         media="(min-width: 1024px)"
         srcSet={`/landing/${name}-desktop.png`}
+        width={name === "lab" ? 747 : 1208}
+        height={name === "lab" ? 543 : 900}
       />
       <img
-        src={`/landing/${name}-mobile.png`}
+        src={`/landing/${name === "lab" ? "lab-desktop" : "lesson-mobile"}.png`}
         alt={alt}
-        width="390"
-        height="844"
+        width={name === "lab" ? 747 : 500}
+        height={name === "lab" ? 543 : 844}
         loading={priority ? "eager" : "lazy"}
         className="block h-auto w-full"
       />
