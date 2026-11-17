@@ -25,8 +25,14 @@ import {
   validateExperimentConfig,
 } from "@/features/run-experiment";
 import {
+  changeFamily,
+  changeSource,
+  toggleSelectedSeries,
+} from "../model/config-transitions";
+import {
   type ExperimentPreset,
   getExperimentPreset,
+  presetMatchesConfig,
 } from "../model/experiment-presets";
 import {
   copyLabConfig,
@@ -36,6 +42,7 @@ import {
   type LabConfig,
   type ResearchFields,
 } from "../model/lab-config";
+import { validateResearch } from "../model/research-validation";
 import { ExperimentPresets } from "./experiment-presets";
 import { ExperimentResultTabs } from "./experiment-result-tabs";
 import { ExperimentResults } from "./experiment-results";
@@ -63,14 +70,7 @@ export function ExperimentWorkspace() {
     ? getExperimentPreset(loadedPresetId)
     : undefined;
   const presetMatches =
-    loadedPreset &&
-    Object.entries(loadedPreset.config).every(([key, value]) => {
-      const current = draft[key as keyof LabConfig];
-      return Array.isArray(value) && Array.isArray(current)
-        ? value.length === current.length &&
-            value.every((id) => current.includes(id))
-        : current === value;
-    });
+    loadedPreset && presetMatchesConfig(loadedPreset, draft);
   const result = useMemo(() => runExperiment(config), [config]);
   const comparisonInputSize = result.points.some(
     (point) => point.inputSize === selectedInputSize,
@@ -142,28 +142,7 @@ export function ExperimentWorkspace() {
   ]);
 
   const setSource = (source: ExperimentSource) => {
-    setDraft((current) => {
-      const subject =
-        source === "instrumented" ? "algorithms" : current.subject;
-      const selectedIds =
-        subject === current.subject
-          ? current.selectedIds
-          : defaultIds(subject, current.family);
-      const next: LabConfig = {
-        ...current,
-        source,
-        subject,
-        selectedIds,
-        distribution:
-          source === "instrumented" && selectedIds.includes("binary-search")
-            ? "sorted"
-            : current.distribution,
-      };
-      return {
-        ...next,
-        maxSize: Math.min(next.maxSize, getMaximumInputSize(next)),
-      };
-    });
+    setDraft((current) => changeSource(current, source));
     setError("");
     setNotice("");
   };
@@ -179,39 +158,13 @@ export function ExperimentWorkspace() {
   };
 
   const setFamily = (family: ExperimentAlgorithmFamily) => {
-    setDraft((current) => {
-      const next: LabConfig = {
-        ...current,
-        family,
-        selectedIds: defaultIds("algorithms", family),
-        distribution: family === "search" ? "sorted" : current.distribution,
-      };
-      return {
-        ...next,
-        maxSize: Math.min(next.maxSize, getMaximumInputSize(next)),
-      };
-    });
+    setDraft((current) => changeFamily(current, family));
     setError("");
     setNotice("");
   };
 
   const toggleSeries = (id: string) => {
-    setDraft((current) => {
-      const selectedIds = current.selectedIds.includes(id)
-        ? current.selectedIds.filter((seriesId) => seriesId !== id)
-        : [...current.selectedIds, id];
-      const next: LabConfig = {
-        ...current,
-        selectedIds,
-        distribution: selectedIds.includes("binary-search")
-          ? "sorted"
-          : current.distribution,
-      };
-      return {
-        ...next,
-        maxSize: Math.min(next.maxSize, getMaximumInputSize(next)),
-      };
-    });
+    setDraft((current) => toggleSelectedSeries(current, id));
     setError("");
   };
 
@@ -236,23 +189,9 @@ export function ExperimentWorkspace() {
 
   const persistResearch = () => {
     const title = research.title.trim();
-    if (!title) {
-      setResearchError("Введите название исследования перед сохранением.");
-      return false;
-    }
-    if (title.length > 80) {
-      setResearchError(
-        "Название исследования должно быть не длиннее 80 символов.",
-      );
-      return false;
-    }
-    if (
-      research.hypothesis.length > 2_000 ||
-      research.conclusion.length > 2_000
-    ) {
-      setResearchError(
-        "Гипотеза и вывод должны быть не длиннее 2000 символов каждый.",
-      );
+    const validationError = validateResearch(research);
+    if (validationError) {
+      setResearchError(validationError);
       return false;
     }
 

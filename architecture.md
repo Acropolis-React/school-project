@@ -304,3 +304,6 @@ Lesson theory follows definition → explanation → worked example → formula 
 
 `src/app/page.tsx` composes `views/landing` and `widgets/landing-page`; the existing dashboard is served by `src/app/home/page.tsx`. The application shell is omitted for `/` and remains in place for application routes, with its home navigation pointing to `/home`. Responsive screenshots live in `public/landing` and use viewport-specific sources.
 
+
+The lesson catalog groups introductory definitions separately from later lessons, then assembles them in their original order. Laboratory configuration transitions and research-field validation live in the lab page model; the workspace coordinates state and presentation.
+

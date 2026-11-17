@@ -82,3 +82,16 @@ export const experimentPresets: ExperimentPreset[] = [
 export function getExperimentPreset(id: string): ExperimentPreset | undefined {
   return experimentPresets.find((preset) => preset.id === id);
 }
+
+export function presetMatchesConfig(
+  preset: ExperimentPreset,
+  config: LabExperimentConfig,
+): boolean {
+  return Object.entries(preset.config).every(([key, value]) => {
+    const current = config[key as keyof LabExperimentConfig];
+    return Array.isArray(value) && Array.isArray(current)
+      ? value.length === current.length &&
+          value.every((id) => current.includes(id))
+      : current === value;
+  });
+}
