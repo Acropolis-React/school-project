@@ -3,7 +3,6 @@
 import {
   BarChart3,
   BookOpen,
-  Braces,
   FlaskConical,
   Home,
   type LucideIcon,
@@ -11,6 +10,7 @@ import {
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
+import { Brand } from "@/shared/ui";
 
 type NavigationItem = {
   href: string;
@@ -21,10 +21,10 @@ type NavigationItem = {
 
 const navigation: NavigationItem[] = [
   {
-    href: "/",
+    href: "/home",
     label: "Главная",
     icon: Home,
-    match: (pathname) => pathname === "/",
+    match: (pathname) => pathname === "/home",
   },
   {
     href: "/learn",
@@ -46,31 +46,16 @@ const navigation: NavigationItem[] = [
   },
 ];
 
-function Brand() {
-  return (
-    <Link
-      href="/"
-      className="inline-flex items-center gap-2 rounded-md text-base font-bold tracking-tight focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent"
-    >
-      <span
-        aria-hidden="true"
-        className="grid h-7 w-7 place-items-center rounded-md border border-accent/20 bg-accent/10 text-accent"
-      >
-        <Braces size={18} strokeWidth={2.2} />
-      </span>
-      AlgoLab
-    </Link>
-  );
-}
-
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
+
+  if (pathname === "/") return <>{children}</>;
 
   return (
     <div className="app-background min-h-dvh text-text-primary lg:grid lg:grid-cols-[232px_minmax(0,1fr)]">
       <aside className="fixed inset-y-0 left-0 z-20 hidden w-[232px] flex-col border-r border-border bg-sidebar px-4 py-5 lg:flex">
         <div className="px-2">
-          <Brand />
+          <Brand href="/home" />
         </div>
         <nav aria-label="Основная навигация" className="mt-8 space-y-1">
           {navigation.map((item) => {
@@ -103,7 +88,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       </aside>
 
       <header className="sticky top-0 z-20 flex h-15 items-center justify-between border-b border-border bg-app px-4 lg:hidden">
-        <Brand />
+        <Brand href="/home" />
         <span className="text-xs font-medium text-text-secondary">
           Изучаем Big O
         </span>

@@ -10,7 +10,7 @@
 
 The laboratory provides two clearly separated sources: **deterministic theoretical simulations** for growth models and **instrumented TypeScript execution** for exact operation counts. Neither source reports execution time. Never describe mathematical plots as measured benchmarks or engine counts as elapsed-time benchmarks.
 
-AlgoLab is not a landing page, LeetCode alternative, animated sorting playground, or arbitrary-code execution service.
+AlgoLab is not a LeetCode alternative, animated sorting playground, or arbitrary-code execution service.
 
 ## 2. User problem, audience and value
 
@@ -26,7 +26,7 @@ AlgoLab is not a landing page, LeetCode alternative, animated sorting playground
 
 ### First-time learner
 
-1. Open `/learn` directly; no sign-up or marketing landing page.
+1. Open `/` for the educational guide or `/learn` directly; no sign-up is required.
 2. Select a lesson (the first is suggested, but lessons are not locked).
 3. Read concise theory and a small annotated C++ snippet.
 4. Predict what will happen when input size grows.
@@ -46,7 +46,8 @@ Open `/lab`, choose a theoretical comparison or an instrumented operation-count 
 
 | Route | User purpose |
 | --- | --- |
-| `/` | Educational home dashboard: continue learning, course progress and lab shortcut |
+| `/` | Educational introduction and practical guide |
+| `/home` | Learner dashboard: continue learning, course progress and lab shortcut |
 | `/learn` | Curriculum and continue-learning entry |
 | `/learn/[slug]` | Structured lesson with exercise steps |
 | `/lab` | Free complexity laboratory |
@@ -117,7 +118,7 @@ The theoretical and instrumented providers share the same laboratory presentatio
 
 **P2:** CSV/PDF export, more algorithm families, and optional elapsed-time measurement.
 
-**Out of scope for the current UI:** authentication, backend/API/database, arbitrary user code, Web Workers, elapsed-time benchmarking, generated fake timings, marketing landing pages, elaborate animation and gamification.
+**Out of scope for the current UI:** authentication, backend/API/database, arbitrary user code, Web Workers, elapsed-time benchmarking, generated fake timings, conventional marketing pages, elaborate animation and gamification.
 
 ## 10. Acceptance criteria
 
@@ -155,3 +156,8 @@ M6b (implemented) — Integrate exact operation counts and reproducible research
 M6c (optional, later) — Add elapsed-time experiments only with proper methodology.
 
 The product is successful when a learner can **independently determine and explain** the Big O of simple unfamiliar code, and use visual models appropriately without confusing them with measured performance.
+
+## Landing page update
+
+The root route `/` is an educational introduction and practical guide. The existing learner dashboard is available directly at `/home`; `/learn`, `/lab`, and `/progress` retain their existing roles. The guide links to the first lesson and laboratory and distinguishes theoretical model values from instrumented operation counts. Screenshots show the existing interface at mobile and desktop sizes.
+

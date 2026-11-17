@@ -1,4 +1,4 @@
-import { HomeView } from "@/views/home";
-export default function HomePage() {
-  return <HomeView />;
+import { LandingView } from "@/views/landing";
+export default function Page() {
+  return <LandingView />;
 }

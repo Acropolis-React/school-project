@@ -58,7 +58,7 @@ algolab/
 ├── src/
 │   ├── app/                              # Next.js App Router, keep existing location
 │   │   ├── layout.tsx                    # Uses providers / global styles
-│   │   ├── page.tsx                      # Thin adapter -> views/home dashboard
+│   │   ├── page.tsx                      # Thin adapter -> views/landing
 │   │   ├── learn/
 │   │   │   ├── page.tsx                  # Thin adapter -> views/learn
 │   │   │   └── [slug]/page.tsx           # Thin adapter -> views/lesson
@@ -299,3 +299,8 @@ When a task conflicts with the target tree, favor **minimal modifications to the
 Experiment source terminology is centralized in `features/run-experiment/model/source-metadata.ts` and reused by laboratory and guided lesson interfaces. Formula points are rounded; instrumented results count selected operations of built-in implementations on generated deterministic inputs, not elapsed time. Draft source changes hide the previous result until the new configuration is applied.
 
 Lesson theory follows definition → explanation → worked example → formula demonstration → checked application → takeaway. Typed demonstration blocks reuse a lesson-page slider, diagrams and accessible value tables; their pure formulas live in `entities/lesson/model/demonstration.ts` and are explicitly distinct from the instrumented experiment engine. Each lesson exposes a `takeaway`, shown after required practice passes (including restored completion). Question, lesson, and guided-assignment IDs remain stable for existing local progress. The first guided activity now compares the already introduced n and n² models; logarithms are introduced in their own lesson.
+
+## Landing route update
+
+`src/app/page.tsx` composes `views/landing` and `widgets/landing-page`; the existing dashboard is served by `src/app/home/page.tsx`. The application shell is omitted for `/` and remains in place for application routes, with its home navigation pointing to `/home`. Responsive screenshots live in `public/landing` and use viewport-specific sources.
+
