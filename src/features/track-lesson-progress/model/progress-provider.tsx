@@ -10,6 +10,7 @@ import {
   useState,
 } from "react";
 import {
+  type AnswerRecord,
   clearProgress,
   emptyProgress,
   type LearningProgress,
@@ -28,10 +29,34 @@ type ProgressContextValue = {
     correct: boolean,
   ) => void;
   completeLesson: (lessonSlug: string) => void;
+  completeAssignment: (assignmentId: string) => void;
   resetProgress: () => void;
 };
 
 const ProgressContext = createContext<ProgressContextValue | null>(null);
+
+function retainAnswers(answers: AnswerRecord[]): AnswerRecord[] {
+  if (answers.length <= 200) return answers;
+  const protectedIndexes = new Set<number>();
+  const seen = new Set<string>();
+  answers.forEach((answer, index) => {
+    if (!answer.correct || !answer.questionId || !answer.choiceId) return;
+    const key = JSON.stringify([answer.lessonSlug, answer.questionId]);
+    if (!seen.has(key)) {
+      seen.add(key);
+      protectedIndexes.add(index);
+    }
+  });
+  const retained = new Set(protectedIndexes);
+  for (
+    let index = answers.length - 1;
+    index >= 0 && retained.size < 200;
+    index -= 1
+  ) {
+    retained.add(index);
+  }
+  return answers.filter((_, index) => retained.has(index)).slice(-200);
+}
 
 export function LearningProgressProvider({
   children,
@@ -74,7 +99,7 @@ export function LearningProgressProvider({
       recordAnswer: (lessonSlug, questionId, choiceId, correct) => {
         commit((current) => ({
           ...current,
-          answers: [
+          answers: retainAnswers([
             ...current.answers,
             {
               lessonSlug,
@@ -83,7 +108,7 @@ export function LearningProgressProvider({
               correct,
               answeredAt: new Date().toISOString(),
             },
-          ].slice(-200),
+          ]),
         }));
       },
       completeLesson: (lessonSlug) => {
@@ -94,6 +119,16 @@ export function LearningProgressProvider({
           )
             ? current.completedLessonSlugs
             : [...current.completedLessonSlugs, lessonSlug],
+        }));
+      },
+      completeAssignment: (assignmentId) => {
+        commit((current) => ({
+          ...current,
+          completedAssignments: current.completedAssignments.includes(
+            assignmentId,
+          )
+            ? current.completedAssignments
+            : [...current.completedAssignments, assignmentId],
         }));
       },
       resetProgress: () => {

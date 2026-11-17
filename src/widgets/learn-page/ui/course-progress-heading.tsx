@@ -5,7 +5,7 @@ export function CourseProgressHeading({ completed }: { completed: number }) {
   return (
     <PageHeader
       title="Курс"
-      description="Шесть коротких уроков: от смысла Big O до анализа незнакомого кода."
+      description="Короткие уроки: от смысла Big O до анализа незнакомого кода."
       aside={
         <div className="min-w-52">
           <div className="flex justify-between text-xs text-text-secondary">

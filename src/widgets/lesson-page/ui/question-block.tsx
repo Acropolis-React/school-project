@@ -62,10 +62,10 @@ export function QuestionBlock({
         {question.choices.map((item) => (
           <label
             key={item.id}
-            className={`flex min-h-12 cursor-pointer items-center gap-3 rounded-lg border px-4 text-sm transition-[background-color,border-color,box-shadow,color] ${choice === item.id ? "border-accent bg-accent/10 text-text-primary shadow-[0_2px_6px_rgba(0,0,0,0.16)]" : "border-border-strong bg-surface-raised text-text-secondary shadow-[0_2px_6px_rgba(0,0,0,0.12)] hover:border-text-muted hover:bg-surface-hover hover:text-text-primary"}`}
+            className={`flex min-h-12 cursor-pointer items-center gap-3 rounded-lg border px-4 py-3 text-sm transition-colors ${choice === item.id ? "border-accent bg-accent/10 text-text-primary" : "border-border-strong bg-surface-raised text-text-secondary hover:border-text-muted hover:bg-surface-hover hover:text-text-primary"}`}
           >
             <input
-              className="size-4 accent-[#4cc9a6]"
+              className="size-4 shrink-0 accent-[#4cc9a6]"
               type="radio"
               name={`${lessonSlug}-${question.id}`}
               value={item.id}

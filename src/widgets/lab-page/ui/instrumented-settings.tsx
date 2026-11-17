@@ -38,7 +38,7 @@ export function InstrumentedSettings({
 }: InstrumentedSettingsProps) {
   return (
     <>
-      <div className="mt-5 space-y-4 border-t border-border pt-5">
+      <div className="space-y-4">
         <div>
           <label className="block text-sm font-medium" htmlFor="distribution">
             Распределение входа
@@ -99,59 +99,52 @@ export function InstrumentedSettings({
         </div>
       </div>
 
-      <details className="mt-5 border-t border-border pt-4">
-        <summary className="cursor-pointer text-sm font-medium text-text-primary focus-visible:outline-2 focus-visible:outline-accent">
-          {draft.family === "search"
-            ? "Воспроизводимость и цель поиска"
-            : "Воспроизводимость"}
-        </summary>
-        <div className="mt-4 space-y-4">
-          <div>
-            <label className="block text-sm font-medium" htmlFor="seed">
-              Начальное значение (seed)
-            </label>
-            <input
-              id="seed"
-              type="number"
-              min="0"
-              max="4294967295"
-              value={draft.seed}
-              onChange={(event) =>
-                onConfigChange({ seed: Number(event.target.value) })
-              }
-              className={`${controlClass} font-mono`}
-            />
-            <p className="mt-1 text-xs leading-5 text-text-muted">
-              Тот же seed и конфигурация дают те же массивы и результаты.
-            </p>
-          </div>
-          {draft.family === "search" ? (
-            <div>
-              <label
-                className="block text-sm font-medium"
-                htmlFor="target-position"
-              >
-                Положение искомого значения
-              </label>
-              <select
-                id="target-position"
-                value={draft.targetPosition}
-                onChange={(event) => {
-                  if (isTargetPosition(event.target.value))
-                    onConfigChange({ targetPosition: event.target.value });
-                }}
-                className={controlClass}
-              >
-                {targetPositionOptions.map((option) => (
-                  <option key={option.id} value={option.id}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-          ) : null}
+      <div className="mt-4 space-y-4">
+        <div>
+          <label className="block text-sm font-medium" htmlFor="seed">
+            Начальное значение (seed)
+          </label>
+          <input
+            id="seed"
+            type="number"
+            min="0"
+            max="4294967295"
+            value={draft.seed}
+            onChange={(event) =>
+              onConfigChange({ seed: Number(event.target.value) })
+            }
+            className={`${controlClass} font-mono`}
+          />
+          <p className="mt-1 text-xs leading-5 text-text-muted">
+            Тот же seed и конфигурация дают те же массивы и результаты.
+          </p>
         </div>
-      </details>
+        {draft.family === "search" ? (
+          <div>
+            <label
+              className="block text-sm font-medium"
+              htmlFor="target-position"
+            >
+              Положение искомого значения
+            </label>
+            <select
+              id="target-position"
+              value={draft.targetPosition}
+              onChange={(event) => {
+                if (isTargetPosition(event.target.value))
+                  onConfigChange({ targetPosition: event.target.value });
+              }}
+              className={controlClass}
+            >
+              {targetPositionOptions.map((option) => (
+                <option key={option.id} value={option.id}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        ) : null}
+      </div>
     </>
   );
 }

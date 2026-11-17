@@ -1,7 +1,7 @@
 import type { SavedExplorationConfig } from "../model/types";
 
 const metricLabels: Record<SavedExplorationConfig["metric"], string> = {
-  total: "все операции",
+  total: "сумма счётчиков",
   comparisons: "сравнения",
   swaps: "обмены",
   arrayReads: "чтения",
@@ -21,8 +21,8 @@ const distributionLabels: Record<
 export function describeExploration(config: SavedExplorationConfig): string {
   if (config.source === "instrumented") {
     return config.family === "search"
-      ? "Точные операции · алгоритмы поиска"
-      : "Точные операции · алгоритмы сортировки";
+      ? "Подсчёт операций · алгоритмы поиска"
+      : "Подсчёт операций · алгоритмы сортировки";
   }
   if (config.subject === "complexities")
     return "Теоретическая модель · классы Big O";

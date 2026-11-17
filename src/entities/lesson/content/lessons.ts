@@ -1,7 +1,12 @@
 import type { Lesson } from "../model/types";
 import { analyzeCodePractice } from "./analyze-code-questions";
+import { lessonAdditions } from "./lesson-additions";
+import { lessonTheory } from "./lesson-theory";
 
-export const lessons: Lesson[] = [
+const sumExample =
+  "int sum = 0;\nfor (int i = 0; i < n; ++i) {\n  sum += values[i];\n}\nreturn sum;";
+
+const baseLessons: Omit<Lesson, "theory" | "takeaway">[] = [
   {
     slug: "what-is-big-o",
     number: 1,
@@ -9,11 +14,7 @@ export const lessons: Lesson[] = [
     description:
       "Что такое асимптотический рост и почему важен размер входа n.",
     duration: "12 мин",
-    theory: [
-      "Big O описывает, как меняется верхняя граница роста затрат алгоритма при увеличении входа n. Это не секундомер и не точное число операций.",
-      "Константы и небольшие слагаемые обычно не меняют класс роста: 3n + 10 относится к O(n). Для точной тесной границы используют Θ, когда она доказана.",
-    ],
-    code: "int sum = 0;\nfor (int i = 0; i < n; ++i) {\n  sum += values[i];\n}\nreturn sum;",
+    code: sumExample,
     codeCaption: "Цикл проходит по каждому элементу один раз.",
     hypothesis: {
       id: "what-is-big-o-hypothesis",
@@ -36,7 +37,10 @@ export const lessons: Lesson[] = [
     practice: [
       {
         id: "what-is-big-o-practice",
-        prompt: "Какова временная сложность показанного цикла?",
+        code: sumExample,
+        codeCaption: "Считаем добавления элементов к сумме.",
+        prompt:
+          "Какая из предложенных верхних границ наиболее точна для показанного цикла? Считайте сложение и доступ к элементу постоянными по стоимости.",
         choices: [
           { id: "constant", label: "O(1) — константная" },
           { id: "linear", label: "O(n) — линейная" },
@@ -55,10 +59,6 @@ export const lessons: Lesson[] = [
     description:
       "Последовательные и вложенные циклы, константный и квадратичный рост.",
     duration: "15 мин",
-    theory: [
-      "Один доступ по индексу обычно моделируют как O(1), один полный проход — как O(n). Два независимых последовательных прохода дают O(n + n) = O(n).",
-      "Вложенность сама по себе не доказывает O(n²): нужно изучить границы циклов. Если внутренний цикл выполняется i раз, сумма 1 + … + n всё же имеет квадратичный рост.",
-    ],
     code: "for (int i = 0; i < n; ++i) {\n  for (int j = 0; j < n; ++j) {\n    visit(i, j);\n  }\n}",
     codeCaption:
       "Для каждой из n итераций внешний цикл запускает n внутренних.",
@@ -82,7 +82,8 @@ export const lessons: Lesson[] = [
     practice: [
       {
         id: "linear-and-quadratic-practice",
-        prompt: "Два последовательных цикла по n элементов имеют сложность…",
+        prompt:
+          "Два последовательных полных цикла по n элементов делают постоянную работу за итерацию. Какая из предложенных верхних границ наиболее точна?",
         choices: [
           { id: "linear", label: "O(n)" },
           { id: "quadratic", label: "O(n²)" },
@@ -95,21 +96,94 @@ export const lessons: Lesson[] = [
     ],
   },
   {
-    slug: "logarithmic",
+    slug: "same-complexity-different-costs",
     number: 3,
+    title: "Одинаковая сложность — разные затраты",
+    description: "Константы, входные данные и различия между реализациями.",
+    duration: "8 мин",
+    code: "for (int i = 0; i < n; ++i) {\n  work(); work();\n}\n// Другой цикл вызывает work() 8 раз за итерацию.",
+    codeCaption: "Если вызовы считать отдельно, получаются 2n и 8n вызовов.",
+    hypothesis: {
+      id: "same-complexity-hypothesis",
+      prompt:
+        "Две программы выполняют соответственно 2n и 8n одинаковых операций. Что можно заключить при одном и том же положительном n?",
+      choices: [
+        {
+          id: "factor",
+          label:
+            "Обе линейны; вторая выполняет в четыре раза больше этих операций.",
+        },
+        { id: "class", label: "Вторая квадратична, потому что 8 больше 2." },
+        {
+          id: "time",
+          label: "Вторая обязательно работает ровно в четыре раза дольше.",
+        },
+      ],
+      correctChoiceId: "factor",
+      explanation:
+        "8n / 2n = 4 при n > 0; обе функции имеют рост Θ(n). Число операций само по себе не определяет точное время.",
+    },
+    experimentModels: ["linear", "quadratic"],
+    showModelChart: false,
+    interpretation: [
+      "В исследовании считались записи в массив при выполнении двух конкретных реализаций на одинаковом обратном входе. Это реальные счётчики выбранной операции, а не время выполнения.",
+      "На обратном входе каждый обмен пузырьковой сортировки даёт две записи, а сортировка вставками записывает сдвиги и ключ. Поэтому при одном n сравнивайте столбцы записей, а не время.",
+      "Теоретические выражения 2n и 8n показывают роль постоянного множителя; они не являются формулами для результатов сортировок. Одинаковая оценка O(n²) в худшем случае не означает одинаковых точных затрат.",
+    ],
+    practice: [
+      {
+        id: "same-complexity-practice-input",
+        prompt:
+          "Две сортировки имеют оценку O(n²) в худшем случае. Почему их счётчики на массивах одинаковой длины могут различаться?",
+        choices: [
+          {
+            id: "details",
+            label:
+              "Из-за порядка входных данных, выбранной операции и деталей реализации.",
+          },
+          {
+            id: "equal",
+            label:
+              "Не могут: одинаковый Big O гарантирует одинаковое число операций.",
+          },
+          {
+            id: "class",
+            label: "Различие всегда доказывает, что одна из оценок неверна.",
+          },
+        ],
+        correctChoiceId: "details",
+        explanation:
+          "Big O не задаёт точное число операций: разные входы и реализации приводят к разным счётчикам при одной асимптотической оценке.",
+      },
+      {
+        id: "same-complexity-practice-metric",
+        prompt:
+          "В одном запуске насчитали меньше записей. Следует ли из этого, что алгоритм всегда быстрее?",
+        choices: [
+          {
+            id: "no",
+            label: "Нет: другие операции и время выполнения могут отличаться.",
+          },
+          { id: "yes", label: "Да: число записей полностью определяет время." },
+        ],
+        correctChoiceId: "no",
+        explanation:
+          "Записи — только одна категория операций. Без отдельного измерения и условий нельзя утверждать, какой алгоритм быстрее по времени.",
+      },
+    ],
+  },
+  {
+    slug: "logarithmic",
+    number: 4,
     title: "O(log n)",
     description: "Повторное деление задачи пополам и условие бинарного поиска.",
     duration: "14 мин",
-    theory: [
-      "Логарифмический рост возникает, когда на каждом шаге размер оставшейся задачи уменьшается в несколько раз.",
-      "Бинарный поиск работает за O(log n), только если данные отсортированы и доступ к середине достаточно быстрый.",
-    ],
-    code: "while (left <= right) {\n  int mid = left + (right - left) / 2;\n  if (a[mid] < target) left = mid + 1;\n  else right = mid - 1;\n}",
+    code: "// a отсортирован; left = 0, right = n - 1\nwhile (left <= right) {\n  int mid = left + (right - left) / 2;\n  if (a[mid] == target) return mid;\n  if (a[mid] < target) left = mid + 1;\n  else right = mid - 1;\n}\nreturn -1; // цель не найдена",
     codeCaption: "После каждой проверки остаётся примерно половина диапазона.",
     hypothesis: {
       id: "logarithmic-hypothesis",
       prompt:
-        "Если размер отсортированного массива удвоить, сколько шагов примерно добавится?",
+        "В модели бинарного поиска делим диапазон пополам до одного кандидата. Если размер отсортированного массива удвоить, сколько делений добавится?",
       choices: [
         { id: "one", label: "Около одного шага" },
         { id: "double", label: "Число шагов удвоится" },
@@ -118,7 +192,7 @@ export const lessons: Lesson[] = [
       correctChoiceId: "one",
       explanation: "log₂(2n) = log₂(n) + 1.",
     },
-    experimentModels: ["logarithmic", "quadratic"],
+    experimentModels: ["logarithmic", "linear"],
     interpretation: [
       "Логарифм растёт очень медленно даже на больших входах.",
       "Форма кривой не отменяет предусловия: бинарный поиск требует сортировки.",
@@ -141,15 +215,11 @@ export const lessons: Lesson[] = [
   },
   {
     slug: "n-log-n",
-    number: 4,
+    number: 5,
     title: "O(n log n)",
     description:
       "Линейно-логарифмический рост и эффективные алгоритмы сортировки.",
     duration: "16 мин",
-    theory: [
-      "O(n log n) часто появляется, когда задача делится на уровни, а на каждом уровне обрабатываются все n элементов.",
-      "Сортировка слиянием имеет Θ(n log n) по времени для стандартной реализации, но требует дополнительной памяти.",
-    ],
     code: "mergeSort(a, left, mid);\nmergeSort(a, mid + 1, right);\nmerge(a, left, mid, right);",
     codeCaption:
       "log n уровней разбиения, на каждом уровне — линейное слияние.",
@@ -186,14 +256,10 @@ export const lessons: Lesson[] = [
   },
   {
     slug: "input-cases",
-    number: 5,
+    number: 6,
     title: "Лучший, средний и худший случаи",
     description: "Как свойства входа меняют работу алгоритма и смысл оценки.",
     duration: "15 мин",
-    theory: [
-      "Один алгоритм может выполнять разное число шагов на разных входах одинакового размера.",
-      "Всегда уточняйте, о каком случае идёт речь и какие предположения лежат в основе среднего случая.",
-    ],
     code: "for (int i = 0; i < n; ++i) {\n  if (a[i] == target) return i;\n}\nreturn -1;",
     codeCaption:
       "Линейный поиск может завершиться сразу или проверить весь массив.",
@@ -209,6 +275,7 @@ export const lessons: Lesson[] = [
       explanation: "Если искомый элемент первый, достаточно одной проверки.",
     },
     experimentModels: ["linear", "quadratic"],
+    showModelChart: false,
     interpretation: [
       "Худший случай линейного поиска — Θ(n): элемент последний или отсутствует.",
       "Средняя оценка требует модели распределения входных данных; её нельзя просто выдумать.",
@@ -230,15 +297,11 @@ export const lessons: Lesson[] = [
   },
   {
     slug: "analyze-code",
-    number: 6,
+    number: 7,
     title: "Анализ незнакомого кода",
     description:
       "Итоговый алгоритм рассуждения и смешанные задачи по короткому C++ коду.",
     duration: "18 мин",
-    theory: [
-      "Выделите базовые операции, определите число повторений и сложите последовательные части. Для вложенных частей учитывайте реальные границы.",
-      "Сначала формулируйте функцию роста, затем упрощайте её до подходящей асимптотической оценки.",
-    ],
     code: "for (int i = 1; i < n; i *= 2) {\n  for (int j = 0; j < n; ++j) {\n    inspect(i, j);\n  }\n}",
     codeCaption: "Внешний цикл удваивает i, внутренний проходит n элементов.",
     hypothesis: {
@@ -261,6 +324,16 @@ export const lessons: Lesson[] = [
     practice: analyzeCodePractice,
   },
 ];
+
+export const lessons: Lesson[] = baseLessons.map((lesson) => ({
+  ...lesson,
+  theory: lessonTheory[lesson.slug],
+  takeaway: lessonAdditions[lesson.slug].conclusion,
+  practice: [
+    ...lesson.practice,
+    ...(lessonAdditions[lesson.slug].practice ?? []),
+  ],
+}));
 
 export const getLesson = (slug: string) =>
   lessons.find((lesson) => lesson.slug === slug);

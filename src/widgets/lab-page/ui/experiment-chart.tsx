@@ -9,6 +9,7 @@ import {
   YAxis,
 } from "recharts";
 import {
+  experimentSourceMetadata,
   getMetricLabel,
   type LabExperimentResult,
 } from "@/features/run-experiment";
@@ -24,9 +25,7 @@ type ExperimentChartProps = {
 
 export function ExperimentChart({ result }: ExperimentChartProps) {
   const isInstrumented = result.source === "instrumented";
-  const chartTitle = isInstrumented
-    ? "Фактические операции алгоритмов"
-    : "Теоретический рост";
+  const chartTitle = experimentSourceMetadata[result.source].chartTitle;
   const yAxisShortLabel =
     result.metric === "model-value"
       ? "Условные единицы"
@@ -34,7 +33,7 @@ export function ExperimentChart({ result }: ExperimentChartProps) {
 
   return (
     <section
-      className="flex h-full min-w-0 flex-col rounded-xl border border-border bg-surface p-4 sm:p-5"
+      className="min-w-0 rounded-xl border border-border bg-surface p-4 sm:p-5"
       aria-labelledby="chart-heading"
     >
       <div className="flex flex-col gap-3 border-b border-border pb-4 sm:flex-row sm:items-start sm:justify-between">
@@ -53,7 +52,7 @@ export function ExperimentChart({ result }: ExperimentChartProps) {
         </span>
       </div>
       <div
-        className="mt-4 h-[340px] w-full sm:h-[420px] xl:h-auto xl:min-h-[420px] xl:flex-1"
+        className="mt-4 h-[300px] w-full sm:h-[420px]"
         role="img"
         aria-label={`${chartTitle}. ${result.yAxisLabel} в зависимости от размера входа n.`}
       >
@@ -108,7 +107,7 @@ export function ExperimentChart({ result }: ExperimentChartProps) {
               labelStyle={{ color: "#e6edf3" }}
               labelFormatter={(label) => `Размер входа n = ${label}`}
               formatter={(value, name) => [
-                Number(value).toLocaleString("ru-RU"),
+                `${Number(value).toLocaleString("ru-RU")} (${result.yAxisLabel.toLowerCase()})`,
                 result.series.find((item) => item.id === name)?.shortLabel ??
                   name,
               ]}

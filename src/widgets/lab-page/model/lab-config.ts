@@ -38,6 +38,9 @@ export function defaultIds(
   subject: ComparisonSubject,
   family: ExperimentAlgorithmFamily,
 ): string[] {
+  if (subject === "algorithms" && family === "sorting") {
+    return ["bubble-sort", "merge-sort"];
+  }
   return subject === "algorithms"
     ? getAlgorithmsByFamily(family).map((algorithm) => algorithm.id)
     : complexityModels.map((model) => model.id);

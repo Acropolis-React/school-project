@@ -77,6 +77,22 @@ export function SavedExplorationsReport({
                     {describeExplorationDetails(item.config)} · обновлено{" "}
                     {formatExplorationDate(item.updatedAt)}
                   </p>
+                  {item.hypothesis ? (
+                    <p className="mt-2 text-xs leading-5 text-text-secondary">
+                      <span className="font-medium text-text-primary">
+                        Гипотеза:
+                      </span>{" "}
+                      {item.hypothesis}
+                    </p>
+                  ) : null}
+                  {item.conclusion ? (
+                    <p className="mt-1 text-xs leading-5 text-text-secondary">
+                      <span className="font-medium text-text-primary">
+                        Вывод:
+                      </span>{" "}
+                      {item.conclusion}
+                    </p>
+                  ) : null}
                 </div>
                 <div className="flex gap-2">
                   <ButtonLink

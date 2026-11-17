@@ -20,7 +20,7 @@
 | Persistence | Browser localStorage for learning progress and saved laboratory configurations |
 | Deployment | Vercel |
 
-The educational UI uses guided lessons, exercises, and a dual-source laboratory. The theoretical mode remains clearly labeled as simulated data; the experimental mode executes the five trusted built-in algorithms and displays exact operation counts under the documented counting model. No dedicated backend, database, authentication, Web Worker, arbitrary code execution, or elapsed-time benchmarking is used.
+The educational UI uses guided lessons, exercises, and a dual-source laboratory. The theoretical mode remains clearly labeled as simulated data; the experimental mode executes trusted built-in algorithms and displays exact operation counts under the documented counting model. No dedicated backend, database, authentication, Web Worker, arbitrary code execution, or elapsed-time benchmarking is used.
 
 The learning goal remains understanding Big O through theory, hypotheses, practical tasks, and actual computation through the bounded engine. Simulated numbers are **not empirical measurements** and must never be represented as such.
 
@@ -218,7 +218,9 @@ This approach enables frontend validation without premature worker/benchmarking 
 
 ### Instrumented algorithm engine
 
-The domain-level algorithm engine executes the trusted TypeScript implementations of linear search, binary search, bubble sort, insertion sort, and merge sort. It is synchronous, React-independent, bounded, deterministic, and exported only through the `entities/algorithm` public API. Binary search validates its sorted-input precondition. All executions work on a copy and never mutate the caller's array.
+The domain-level algorithm engine executes the trusted TypeScript implementations of linear search, binary search, bubble sort, insertion sort, merge sort, and Quick Sort. It is synchronous, React-independent, bounded, deterministic, and exported only through the `entities/algorithm` public API. Binary search validates its sorted-input precondition. All executions work on a copy and never mutate the caller's array.
+
+Quick Sort uses Lomuto partitioning with the last element as pivot, compares using `<=`, and skips exchanges of an element with itself. Its iterative implementation defers larger partitions and processes smaller ones immediately to bound stack usage, while preserving the same partition operations. Sorted, reverse-sorted, and all-equal inputs can cause quadratic work, so Quick Sort shares the 2,000-element execution limit used by the quadratic sorts. Its theoretical curve is an illustrative average-case `n · ⌈log₂(n)⌉` model for a random ordering of distinct elements, not a measured count or a worst-case curve.
 
 Operation counting follows one versioned model:
 
@@ -236,7 +238,7 @@ The laboratory now exposes the engine through `features/run-experiment` as an ex
 
 ## 5. Lessons and exercises
 
-- Lesson content is **Russian-language structured data** under `entities/lesson/content`, not hard-coded repeated page JSX.
+- Lesson content is **Russian-language structured data** under `entities/lesson/content`, not hard-coded repeated page JSX. Theory uses typed idea, section, note and comparison blocks, rendered by the lesson-page widget; lesson IDs, exercise checks and progress steps remain independent of presentation.
 - Use a reusable lesson renderer: introduction, concise theory, code examples, prediction, experiment, explanation, and 2–3 practice questions.
 - C++ code snippets are read-only learning examples; compiling/executing user code is out of scope.
 - Answer evaluation uses pure functions that can be verified independently; show explanations after a response. Do not present a multiple-choice guess as a mathematical proof.
@@ -250,10 +252,11 @@ The laboratory now exposes the engine through `features/run-experiment` as an ex
 - Save completion state and answered-exercise outcomes in localStorage; do not require login.
 - Access browser-only APIs exclusively from client-side code.
 - Use a versioned schema/key, validate parsed payloads and recover gracefully from corrupted or missing data.
-- The learning-progress payload is currently schema version 2. Version 1 answer records are migrated without fabricated question details, so aggregate statistics remain available while only resolvable version 2 records appear in mistake review.
+- The learning-progress payload is schema version 3. Version 1 answer records are migrated without fabricated question details; version 2 records and completed lessons are retained. Version 3 adds bounded completed guided-assignment IDs. Existing completed lessons remain complete without repeating new assignments.
 - Do not treat progress saved in localStorage as portable across devices.
 - Avoid persisting huge charts or input arrays; save compact settings and results only if history is explicitly implemented.
 - Saved explorations use their own versioned, bounded store (maximum 20 items). Schema version 2 stores a custom title, optional hypothesis/conclusion, timestamps, and a validated reproducible configuration; generated arrays and chart points are never persisted. Valid version 1 configuration-only records migrate to theoretical version 2 records and remain editable.
+- The lab presents result analysis and a native save dialog alongside the result tabs; `/progress` lists saved explorations and links back to the lab for editing. The existing storage hook and schema remain shared by both screens.
 
 ## 7. UI / UX rules
 
@@ -291,3 +294,8 @@ Before declaring a coding task complete, run `pnpm lint`, `pnpm typecheck`, and 
 8. **Later, optional:** add elapsed-time measurement only with a sound methodology; add Web Workers only if they solve demonstrated responsiveness problems.
 
 When a task conflicts with the target tree, favor **minimal modifications to the actual repo** rather than wholesale restructuring. Keep the theoretical and instrumented data sources explicitly separated in product claims and UI copy.
+
+
+Experiment source terminology is centralized in `features/run-experiment/model/source-metadata.ts` and reused by laboratory and guided lesson interfaces. Formula points are rounded; instrumented results count selected operations of built-in implementations on generated deterministic inputs, not elapsed time. Draft source changes hide the previous result until the new configuration is applied.
+
+Lesson theory follows definition → explanation → worked example → formula demonstration → checked application → takeaway. Typed demonstration blocks reuse a lesson-page slider, diagrams and accessible value tables; their pure formulas live in `entities/lesson/model/demonstration.ts` and are explicitly distinct from the instrumented experiment engine. Each lesson exposes a `takeaway`, shown after required practice passes (including restored completion). Question, lesson, and guided-assignment IDs remain stable for existing local progress. The first guided activity now compares the already introduced n and n² models; logarithms are introduced in their own lesson.

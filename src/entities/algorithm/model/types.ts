@@ -5,7 +5,8 @@ export type AlgorithmId =
   | "binary-search"
   | "bubble-sort"
   | "insertion-sort"
-  | "merge-sort";
+  | "merge-sort"
+  | "quick-sort";
 
 export type AlgorithmModel = {
   id: AlgorithmId;

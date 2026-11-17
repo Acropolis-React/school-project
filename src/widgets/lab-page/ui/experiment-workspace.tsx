@@ -18,11 +18,16 @@ import {
   useSavedExplorations,
 } from "@/features/manage-saved-explorations";
 import {
+  experimentSourceMetadata,
   getAvailableExperimentSeries,
   getMaximumInputSize,
   runExperiment,
   validateExperimentConfig,
 } from "@/features/run-experiment";
+import {
+  type ExperimentPreset,
+  getExperimentPreset,
+} from "../model/experiment-presets";
 import {
   copyLabConfig,
   defaultConfig,
@@ -31,10 +36,11 @@ import {
   type LabConfig,
   type ResearchFields,
 } from "../model/lab-config";
-import { ExperimentChart } from "./experiment-chart";
+import { ExperimentPresets } from "./experiment-presets";
+import { ExperimentResultTabs } from "./experiment-result-tabs";
 import { ExperimentResults } from "./experiment-results";
 import { ExperimentSettings } from "./experiment-settings";
-import { SavedExplorationsPanel } from "./saved-explorations-panel";
+import { SaveResearchDialog } from "./save-research-dialog";
 
 export function ExperimentWorkspace() {
   const [draft, setDraft] = useState<LabConfig>(defaultConfig);
@@ -42,19 +48,41 @@ export function ExperimentWorkspace() {
   const [error, setError] = useState("");
   const [researchError, setResearchError] = useState("");
   const [notice, setNotice] = useState("");
+  const [loadedPresetId, setLoadedPresetId] = useState<string | null>(null);
   const [research, setResearch] = useState<ResearchFields>(emptyResearch);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [selectedInputSize, setSelectedInputSize] = useState<number | null>(
+    null,
+  );
   const [isPending, startTransition] = useTransition();
   const requestedExplorationHandled = useRef(false);
   const savedExplorations = useSavedExplorations();
   const availableSeries = getAvailableExperimentSeries(draft);
   const maxInputSize = getMaximumInputSize(draft);
+  const loadedPreset = loadedPresetId
+    ? getExperimentPreset(loadedPresetId)
+    : undefined;
+  const presetMatches =
+    loadedPreset &&
+    Object.entries(loadedPreset.config).every(([key, value]) => {
+      const current = draft[key as keyof LabConfig];
+      return Array.isArray(value) && Array.isArray(current)
+        ? value.length === current.length &&
+            value.every((id) => current.includes(id))
+        : current === value;
+    });
   const result = useMemo(() => runExperiment(config), [config]);
+  const comparisonInputSize = result.points.some(
+    (point) => point.inputSize === selectedInputSize,
+  )
+    ? selectedInputSize
+    : (result.points.at(-1)?.inputSize ?? null);
 
   const openSaved = useCallback((item: SavedExploration) => {
     const restored = copyLabConfig(item.config);
     setDraft(restored);
     setConfig(restored);
+    setLoadedPresetId(null);
     setResearch({
       title: item.title,
       hypothesis: item.hypothesis ?? "",
@@ -68,22 +96,50 @@ export function ExperimentWorkspace() {
     );
   }, []);
 
+  const openPreset = useCallback((preset: ExperimentPreset) => {
+    const presetConfig = copyLabConfig(preset.config);
+    const validationError = validateExperimentConfig(presetConfig);
+    if (validationError) {
+      setError(`Не удалось загрузить пример: ${validationError.message}`);
+      return;
+    }
+    setDraft(presetConfig);
+    setConfig(presetConfig);
+    setLoadedPresetId(preset.id);
+    setEditingId(null);
+    setError("");
+    setResearchError("");
+    setNotice("");
+  }, []);
+
   useEffect(() => {
     if (!savedExplorations.hydrated || requestedExplorationHandled.current)
       return;
 
     requestedExplorationHandled.current = true;
-    const requestedId = new URLSearchParams(window.location.search).get(
-      "exploration",
-    );
-    if (!requestedId) return;
+    const params = new URLSearchParams(window.location.search);
+    const requestedId = params.get("exploration");
+    if (!requestedId) {
+      const presetId = params.get("preset");
+      if (!presetId) return;
+      const preset = getExperimentPreset(presetId);
+      if (preset) openPreset(preset);
+      else
+        setError("Готовое исследование не найдено. Выберите пример из списка.");
+      return;
+    }
 
     const requested = savedExplorations.items.find(
       (item) => item.id === requestedId,
     );
     if (requested) openSaved(requested);
     else setError("Сохранённое исследование не найдено или было удалено.");
-  }, [savedExplorations.hydrated, savedExplorations.items, openSaved]);
+  }, [
+    savedExplorations.hydrated,
+    savedExplorations.items,
+    openSaved,
+    openPreset,
+  ]);
 
   const setSource = (source: ExperimentSource) => {
     setDraft((current) => {
@@ -166,17 +222,14 @@ export function ExperimentWorkspace() {
       return;
     }
     setError("");
-    setNotice(
-      draft.source === "instrumented"
-        ? "Эксперимент выполнен: показаны точные счётчики операций."
-        : "Теоретическая модель обновлена.",
-    );
+    setNotice(experimentSourceMetadata[draft.source].success);
     startTransition(() => setConfig(copyLabConfig(draft)));
   };
 
   const reset = () => {
     setDraft(copyLabConfig(defaultConfig));
     setConfig(copyLabConfig(defaultConfig));
+    setLoadedPresetId(null);
     setError("");
     setNotice("Настройки возвращены к исходным.");
   };
@@ -185,13 +238,13 @@ export function ExperimentWorkspace() {
     const title = research.title.trim();
     if (!title) {
       setResearchError("Введите название исследования перед сохранением.");
-      return;
+      return false;
     }
     if (title.length > 80) {
       setResearchError(
         "Название исследования должно быть не длиннее 80 символов.",
       );
-      return;
+      return false;
     }
     if (
       research.hypothesis.length > 2_000 ||
@@ -200,7 +253,7 @@ export function ExperimentWorkspace() {
       setResearchError(
         "Гипотеза и вывод должны быть не длиннее 2000 символов каждый.",
       );
-      return;
+      return false;
     }
 
     const input = {
@@ -218,7 +271,7 @@ export function ExperimentWorkspace() {
           ? "Не удалось обновить исследование."
           : "Не удалось сохранить исследование.",
       );
-      return;
+      return false;
     }
     setEditingId(saved.id);
     setResearchError("");
@@ -227,6 +280,7 @@ export function ExperimentWorkspace() {
         ? "Исследование обновлено."
         : "Исследование сохранено в этом браузере.",
     );
+    return true;
   };
 
   const stopEditing = () => {
@@ -236,22 +290,16 @@ export function ExperimentWorkspace() {
     setNotice("Можно сохранить текущий результат как новое исследование.");
   };
 
-  const removeSaved = (id: string) => {
-    savedExplorations.remove(id);
-    if (editingId === id) stopEditing();
-  };
-
   return (
     <div className="space-y-5">
-      {notice ? (
-        <output
-          className="block border-l-2 border-accent bg-accent/8 px-4 py-3 text-sm text-text-primary"
-          aria-live="polite"
-        >
-          {notice}
-        </output>
+      <ExperimentPresets onSelect={openPreset} />
+      {loadedPreset ? (
+        <p className="text-xs leading-5 text-text-secondary" aria-live="polite">
+          Загружен пример «{loadedPreset.title}»
+          {presetMatches ? "." : "; настройки изменены."}
+        </p>
       ) : null}
-      <div className="grid gap-5 xl:grid-cols-[340px_minmax(0,1fr)]">
+      <div className="grid items-start gap-5 xl:grid-cols-[minmax(340px,32%)_minmax(0,1fr)]">
         <ExperimentSettings
           draft={draft}
           availableSeries={availableSeries}
@@ -268,25 +316,46 @@ export function ExperimentWorkspace() {
           onApply={apply}
           onReset={reset}
         />
-        <ExperimentChart result={result} />
+        <div className="min-w-0 space-y-5">
+          {draft.source !== result.source ? (
+            <output className="block rounded-lg border border-border bg-surface p-4 text-sm text-text-secondary">
+              Источник изменён. Нажмите «
+              {experimentSourceMetadata[draft.source].action}», чтобы получить
+              результат для выбранного режима.
+            </output>
+          ) : (
+            <>
+              <ExperimentResultTabs result={result} />
+              <ExperimentResults
+                result={result}
+                inputSize={comparisonInputSize}
+                onInputSizeChange={setSelectedInputSize}
+              />
+              {notice ? (
+                <output
+                  className="block border-l-2 border-accent bg-accent/8 px-4 py-3 text-sm text-text-primary"
+                  aria-live="polite"
+                >
+                  {notice}
+                </output>
+              ) : null}
+              <SaveResearchDialog
+                hydrated={savedExplorations.hydrated}
+                storageError={savedExplorations.storageError}
+                researchError={researchError}
+                research={research}
+                editingId={editingId}
+                onResearchChange={(patch) => {
+                  setResearch((current) => ({ ...current, ...patch }));
+                  setResearchError("");
+                }}
+                onPersist={persistResearch}
+                onCancelEditing={stopEditing}
+              />
+            </>
+          )}
+        </div>
       </div>
-      <ExperimentResults result={result} />
-      <SavedExplorationsPanel
-        items={savedExplorations.items}
-        hydrated={savedExplorations.hydrated}
-        storageError={savedExplorations.storageError}
-        researchError={researchError}
-        research={research}
-        editingId={editingId}
-        onResearchChange={(patch) => {
-          setResearch((current) => ({ ...current, ...patch }));
-          setResearchError("");
-        }}
-        onPersist={persistResearch}
-        onCancelEditing={stopEditing}
-        onOpen={openSaved}
-        onRemove={removeSaved}
-      />
     </div>
   );
 }

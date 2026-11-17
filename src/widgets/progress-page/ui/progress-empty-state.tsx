@@ -3,7 +3,7 @@ import { ButtonLink } from "@/shared/ui";
 
 export function ProgressEmptyState() {
   return (
-    <section className="rounded-xl border border-border-strong bg-surface px-5 py-9 text-center shadow-[0_4px_12px_rgba(0,0,0,0.16)] sm:px-8">
+    <section className="rounded-xl border border-border-strong bg-surface px-5 py-9 text-center sm:px-8">
       <span
         aria-hidden="true"
         className="mx-auto grid h-12 w-12 place-items-center rounded-xl border border-accent/25 bg-accent/10 text-accent"

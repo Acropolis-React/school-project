@@ -7,6 +7,7 @@ import {
   type SortingAlgorithmId,
 } from "../../model/execution";
 import { ALGORITHM_ENGINE_LIMITS, createInstrumentation } from "./counting";
+import { quickSort } from "./quick-sort";
 import { binarySearch, linearSearch } from "./search";
 import { bubbleSort, insertionSort, mergeSort } from "./sorting";
 
@@ -47,6 +48,13 @@ const algorithmMetadata: Record<
     requiresSortedInput: false,
     stable: true,
   },
+  "quick-sort": {
+    family: "sorting",
+    variant:
+      "iterative Lomuto quicksort with last-element pivot; self-swaps skipped",
+    requiresSortedInput: false,
+    stable: false,
+  },
 };
 
 function validateValues(values: readonly number[]): void {
@@ -63,7 +71,8 @@ function validateValues(values: readonly number[]): void {
 function validateRequest(request: AlgorithmExecutionRequest): void {
   const quadraticLimit =
     request.algorithmId === "bubble-sort" ||
-    request.algorithmId === "insertion-sort";
+    request.algorithmId === "insertion-sort" ||
+    request.algorithmId === "quick-sort";
   const maxSize = quadraticLimit
     ? ALGORITHM_ENGINE_LIMITS.maxQuadraticSortInputSize
     : ALGORITHM_ENGINE_LIMITS.maxInputSize;
@@ -174,6 +183,8 @@ export function executeAlgorithm(
     bubbleSort(values, instrumentation);
   } else if (request.algorithmId === "insertion-sort") {
     insertionSort(values, instrumentation);
+  } else if (request.algorithmId === "quick-sort") {
+    quickSort(values, instrumentation);
   } else {
     mergeSort(values, instrumentation);
   }

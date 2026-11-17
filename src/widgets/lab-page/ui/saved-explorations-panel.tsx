@@ -40,10 +40,10 @@ export function SavedExplorationsPanel({
 }: SavedExplorationsPanelProps) {
   return (
     <section
-      className="rounded-xl border border-border bg-surface"
+      className="border-y border-border"
       aria-labelledby="saved-explorations-heading"
     >
-      <div className="p-4 sm:p-5">
+      <div className="py-5">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <h2 id="saved-explorations-heading" className="font-semibold">
@@ -162,13 +162,13 @@ export function SavedExplorationsPanel({
       {storageError ? (
         <p
           role="alert"
-          className="mx-4 mb-4 border-l-2 border-error bg-error/8 p-3 text-sm text-error sm:mx-5"
+          className="mb-4 border-l-2 border-error bg-error/8 p-3 text-sm text-error"
         >
           {storageError}
         </p>
       ) : null}
 
-      <div className="border-t border-border p-4 sm:p-5">
+      <div className="border-t border-border py-5">
         <h3 className="text-sm font-semibold">Сохранённые исследования</h3>
         {!hydrated ? (
           <output

@@ -1,6 +1,7 @@
 export type LessonSlug =
   | "what-is-big-o"
   | "linear-and-quadratic"
+  | "same-complexity-different-costs"
   | "logarithmic"
   | "n-log-n"
   | "input-cases"
@@ -21,18 +22,33 @@ export type LessonQuestion = {
   explanation: string;
 };
 
+export type TheoryBlock =
+  | { kind: "demonstration"; title: string }
+  | { kind: "idea" | "section" | "note"; title: string; text: string }
+  | {
+      kind: "comparison" | "classes";
+      title: string;
+      text?: string;
+      items: { label: string; detail: string }[];
+    };
+
 export type Lesson = {
   slug: LessonSlug;
   number: number;
   title: string;
   description: string;
   duration: string;
-  theory: string[];
+  theory: TheoryBlock[];
   code: string;
   codeCaption: string;
   hypothesis: LessonQuestion;
-  experimentModels: ["linear" | "logarithmic" | "linearithmic", "quadratic"];
+  experimentModels: [
+    "linear" | "logarithmic" | "linearithmic",
+    "linear" | "quadratic",
+  ];
   interpretation: string[];
+  takeaway: string;
+  showModelChart?: boolean;
   practice: LessonQuestion[];
 };
 
@@ -48,6 +64,7 @@ export const isLessonSlug = (value: string): value is LessonSlug =>
   [
     "what-is-big-o",
     "linear-and-quadratic",
+    "same-complexity-different-costs",
     "logarithmic",
     "n-log-n",
     "input-cases",

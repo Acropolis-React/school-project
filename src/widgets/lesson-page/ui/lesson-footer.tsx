@@ -4,6 +4,7 @@ import { Button, ButtonLink } from "@/shared/ui";
 type LessonFooterProps = {
   step: number;
   practicePassed: boolean;
+  canContinue: boolean;
   onStepChange: (step: number) => void;
   onFinish: () => void;
 };
@@ -11,6 +12,7 @@ type LessonFooterProps = {
 export function LessonFooter({
   step,
   practicePassed,
+  canContinue,
   onStepChange,
   onFinish,
 }: LessonFooterProps) {
@@ -26,16 +28,31 @@ export function LessonFooter({
         <span className="hidden sm:inline">Назад</span>
       </Button>
       {step < 4 ? (
-        <Button type="button" onClick={() => onStepChange(step + 1)}>
-          Далее <ArrowRight size={16} />
-        </Button>
+        <div className="flex flex-col items-end gap-2">
+          <Button
+            type="button"
+            disabled={!canContinue}
+            aria-describedby={!canContinue ? "step-locked-hint" : undefined}
+            onClick={() => onStepChange(step + 1)}
+          >
+            Далее <ArrowRight size={16} />
+          </Button>
+          {!canContinue ? (
+            <p
+              id="step-locked-hint"
+              className="text-right text-xs text-text-muted"
+            >
+              Выполните задание, чтобы продолжить.
+            </p>
+          ) : null}
+        </div>
       ) : practicePassed ? (
         <ButtonLink href="/learn" onClick={onFinish}>
           Завершить урок <CheckCircle2 size={16} />
         </ButtonLink>
       ) : (
         <span className="text-right text-xs leading-5 text-text-muted">
-          Ответьте верно,
+          Выполните исследование и практику,
           <br />
           чтобы завершить урок
         </span>

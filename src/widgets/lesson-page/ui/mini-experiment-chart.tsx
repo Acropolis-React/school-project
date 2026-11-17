@@ -40,7 +40,7 @@ export function MiniExperimentChart({ lesson }: { lesson: Lesson }) {
       <div className="flex flex-col gap-2 border-b border-border pb-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h3 id="lesson-chart-heading" className="font-semibold">
-            График роста моделей
+            Дополнительный график моделей
           </h3>
           <p className="mt-1 text-xs text-text-muted">
             Ось X — размер входа n · ось Y — модельное значение, усл. ед.
@@ -123,6 +123,44 @@ export function MiniExperimentChart({ lesson }: { lesson: Lesson }) {
           </LineChart>
         </ResponsiveContainer>
       </div>
+      <details className="mt-4 border-t border-border pt-3 text-sm">
+        <summary className="cursor-pointer text-text-secondary">
+          Таблица модельных значений
+        </summary>
+        <div className="mt-3 overflow-x-auto">
+          <table className="w-full text-left text-sm">
+            <caption className="pb-2 text-left text-xs text-text-muted">
+              Теоретические функции, условные единицы; не счётчики и не время.
+            </caption>
+            <thead>
+              <tr className="border-b border-border">
+                <th scope="col" className="py-2 pr-4">
+                  Размер n
+                </th>
+                {models.map((model) => (
+                  <th key={model.id} scope="col" className="py-2 text-right">
+                    {model.shortLabel}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {data.map((point) => (
+                <tr key={point.inputSize} className="border-b border-border">
+                  <th scope="row" className="py-2 pr-4 font-normal">
+                    {point.inputSize}
+                  </th>
+                  {models.map((model) => (
+                    <td key={model.id} className="py-2 text-right font-mono">
+                      {point[model.id]?.toLocaleString("ru-RU")}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </details>
     </section>
   );
 }

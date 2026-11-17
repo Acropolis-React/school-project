@@ -16,14 +16,14 @@ export function ProgressSummary({
 
   return (
     <section
-      className="grid gap-6 rounded-xl border border-border-strong bg-surface p-5 shadow-[0_4px_12px_rgba(0,0,0,0.16)] md:grid-cols-3 sm:p-6"
+      className="grid gap-5 border-y border-border py-6 md:grid-cols-3 md:gap-6"
       aria-label="Сводка прогресса"
     >
       <div>
         <div className="flex items-end justify-between">
           <div>
             <p className="text-sm text-text-secondary">Курс завершён</p>
-            <p className="mt-1 text-3xl font-bold">
+            <p className="mt-1 font-mono text-2xl font-semibold">
               {completed}{" "}
               <span className="text-base font-normal text-text-muted">
                 из {lessons.length}
@@ -47,7 +47,9 @@ export function ProgressSummary({
           </p>
         ) : (
           <>
-            <p className="mt-1 text-3xl font-bold">{answerStats.accuracy}%</p>
+            <p className="mt-1 font-mono text-2xl font-semibold">
+              {answerStats.accuracy}%
+            </p>
             <p className="mt-1 text-xs text-text-muted">
               {answerStats.correct} верных из {answerStats.total} попыток
             </p>
@@ -56,7 +58,9 @@ export function ProgressSummary({
       </div>
       <div className="border-t border-border pt-5 md:border-l md:border-t-0 md:pl-6 md:pt-0">
         <p className="text-sm text-text-secondary">Нужно повторить</p>
-        <p className="mt-1 text-3xl font-bold">{unresolvedMistakes}</p>
+        <p className="mt-1 font-mono text-2xl font-semibold">
+          {unresolvedMistakes}
+        </p>
         <p className="mt-1 text-xs text-text-muted">
           вопросов с последним неверным ответом
         </p>

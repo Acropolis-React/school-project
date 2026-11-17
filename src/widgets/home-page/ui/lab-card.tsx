@@ -1,19 +1,13 @@
-import { ArrowRight, FlaskConical } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { ButtonLink } from "@/shared/ui";
 
 export function LabCard() {
   return (
     <section
-      className="relative overflow-hidden rounded-xl border border-accent/35 bg-surface p-5 shadow-[0_4px_12px_rgba(0,0,0,0.16)] sm:p-6"
+      className="border-t border-border pt-6 lg:border-l lg:border-t-0 lg:pl-8 lg:pt-0"
       aria-labelledby="lab-heading"
     >
-      <span
-        aria-hidden="true"
-        className="grid h-10 w-10 place-items-center rounded-lg border border-accent/35 bg-accent/10 text-accent"
-      >
-        <FlaskConical size={20} />
-      </span>
-      <h2 id="lab-heading" className="mt-5 text-xl font-semibold">
+      <h2 id="lab-heading" className="text-lg font-semibold">
         Лаборатория
       </h2>
       <p className="mt-2 text-sm leading-6 text-text-secondary">
@@ -23,7 +17,7 @@ export function LabCard() {
       <ButtonLink
         href="/lab"
         variant="secondary"
-        className="mt-6 w-full border-accent/70 hover:border-accent hover:bg-accent/10"
+        className="mt-5 w-full sm:w-auto"
       >
         Открыть лабораторию <ArrowRight size={15} />
       </ButtonLink>

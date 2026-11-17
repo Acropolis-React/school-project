@@ -5,10 +5,13 @@ import type {
   ExperimentAlgorithmFamily,
   ExperimentSource,
 } from "@/entities/experiment";
-import type { ExperimentSeriesDefinition } from "@/features/run-experiment";
+import {
+  type ExperimentSeriesDefinition,
+  experimentSourceMetadata,
+} from "@/features/run-experiment";
 import { Button } from "@/shared/ui";
 import type { LabConfig } from "../model/lab-config";
-import { InstrumentedSettings } from "./instrumented-settings";
+import { AdvancedSettings } from "./advanced-settings";
 
 type ExperimentSettingsProps = {
   draft: LabConfig;
@@ -51,7 +54,7 @@ export function ExperimentSettings({
 
   return (
     <aside
-      className="rounded-xl border border-border bg-surface p-5"
+      className="min-w-0 border-b border-border pb-6 xl:border-b-0 xl:border-r xl:pb-0 xl:pr-5"
       aria-labelledby="settings-heading"
     >
       <h2 id="settings-heading" className="text-base font-semibold">
@@ -68,14 +71,12 @@ export function ExperimentSettings({
               onClick={() => onSourceChange(source)}
               className={`min-h-11 rounded-lg border px-3 text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent ${draft.source === source ? "border-accent bg-accent/10 text-text-primary" : "border-border-strong bg-app text-text-secondary hover:bg-surface-raised"}`}
             >
-              {source === "theoretical" ? "Теория" : "Эксперимент"}
+              {experimentSourceMetadata[source].label}
             </button>
           ))}
         </div>
         <p className="mt-2 text-xs leading-5 text-text-muted">
-          {isInstrumented
-            ? "Встроенный TypeScript-код выполняется синхронно; считаются операции, а не миллисекунды."
-            : "Строятся учебные функции роста без запуска алгоритмов."}
+          {experimentSourceMetadata[draft.source].description}
         </p>
       </fieldset>
 
@@ -125,9 +126,19 @@ export function ExperimentSettings({
         <legend className="text-sm font-medium">
           {draft.subject === "algorithms" ? "Алгоритмы" : "Модели сложности"}
         </legend>
-        <p className="mt-1 text-xs leading-5 text-text-muted">
-          Выберите один или несколько рядов для честного сравнения.
-        </p>
+        {draft.subject === "algorithms" && draft.family === "sorting" ? (
+          <p className="mt-2 text-xs leading-5 text-text-secondary">
+            <button
+              type="button"
+              onClick={() =>
+                onConfigChange({ selectedIds: ["bubble-sort", "merge-sort"] })
+              }
+              className="mt-1 block min-h-11 text-left text-accent underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-accent"
+            >
+              Выбрать рекомендуемую пару
+            </button>
+          </p>
+        ) : null}
         <div className="mt-3 space-y-1.5">
           {availableSeries.map((series) => (
             <label
@@ -155,14 +166,6 @@ export function ExperimentSettings({
           ))}
         </div>
       </fieldset>
-
-      {isInstrumented ? (
-        <InstrumentedSettings
-          draft={draft}
-          hasBinarySearch={hasBinarySearch}
-          onConfigChange={onConfigChange}
-        />
-      ) : null}
 
       <div className="mt-6 border-t border-border pt-5">
         <div className="grid grid-cols-2 gap-3">
@@ -203,24 +206,18 @@ export function ExperimentSettings({
           Безопасный предел для выбранных алгоритмов:{" "}
           {maxInputSize.toLocaleString("ru-RU")}.
         </p>
-        <label className="mt-4 block text-sm font-medium" htmlFor="samples">
-          Количество точек
-        </label>
-        <select
-          id="samples"
-          value={draft.samples}
-          onChange={(event) =>
-            onConfigChange({ samples: Number(event.target.value) })
-          }
-          className={controlClass}
-        >
-          {[5, 7, 10, 12].map((count) => (
-            <option key={count} value={count}>
-              {count}
-            </option>
-          ))}
-        </select>
       </div>
+
+      {isInstrumented && hasBinarySearch ? (
+        <p className="mt-2 text-xs leading-5 text-text-muted">
+          Для бинарного поиска нужен отсортированный вход.
+        </p>
+      ) : null}
+      <AdvancedSettings
+        draft={draft}
+        hasBinarySearch={hasBinarySearch}
+        onConfigChange={onConfigChange}
+      />
 
       {error ? (
         <p
@@ -238,9 +235,7 @@ export function ExperimentSettings({
       >
         {isPending
           ? "Обновляем…"
-          : isInstrumented
-            ? "Запустить эксперимент"
-            : "Построить модель"}
+          : experimentSourceMetadata[draft.source].action}
       </Button>
       <Button
         type="button"

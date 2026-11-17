@@ -8,7 +8,8 @@ import type { ExperimentValidationError } from "../model/types";
 export function getMaximumInputSize(config: LabExperimentConfig): number {
   if (config.source === "theoretical") return 500;
   const includesQuadraticSort = config.selectedIds.some(
-    (id) => id === "bubble-sort" || id === "insertion-sort",
+    (id) =>
+      id === "bubble-sort" || id === "insertion-sort" || id === "quick-sort",
   );
   return includesQuadraticSort
     ? ALGORITHM_ENGINE_LIMITS.maxQuadraticSortInputSize

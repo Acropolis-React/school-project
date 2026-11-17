@@ -37,7 +37,7 @@ The implemented dark palette is defined in `src/providers/styles/globals.css`:
 | `--error` | `#f87171` | Incorrect input and answer feedback |
 | `--warning` | `#fbbf24` | Educational cautions and chart series |
 
-Do not introduce generic purple/blue gradients, glowing fields or unrelated ambient color washes. A restrained mint-tinted surface or gradient may distinguish a primary functional panel when it remains inside the established palette. Semantic chart colors may differ from the UI accent when they are required to distinguish data series.
+Do not introduce generic purple/blue gradients, glowing fields or unrelated ambient color washes. Reserve mint-tinted surfaces for selected controls and feedback; do not use gradients to emphasize ordinary sections. Semantic chart colors may differ from the UI accent when they are required to distinguish data series.
 
 ### Typography
 
@@ -79,7 +79,7 @@ Spacing must follow content relationships. Do not apply one vertical padding val
 - Lesson content max-width: `896px` (`max-w-4xl`).
 - Borders are one-pixel structural rules. Full borders are appropriate for settings, charts, tables, code, primary actions, dashboard widgets and useful empty states.
 - Open sections use top/bottom rules or column dividers when a surrounding panel would not improve comprehension.
-- Major functional cards may use low-contrast shadows to separate them from the app background. Shadows must remain subtle and consistent; they are not decoration by themselves.
+- Avoid shadows on routine panels, navigation, buttons and answer choices. Separate content with spacing, a neutral rule or a surface when needed.
 - Glassmorphism is not used. Sticky mobile chrome uses an opaque background.
 
 ### Surface styling rules
@@ -108,7 +108,7 @@ Motion is limited to color/state transitions, progress-width updates, smooth les
 
 - Use open lists for curricula, progress histories and other scan-heavy repeated content.
 - Use grids only when columns express a real relationship: for example, experiment settings beside the resulting chart, or course progress beside a laboratory shortcut.
-- The home screen uses deliberate asymmetry: course progress receives more width than the secondary laboratory entry.
+- The home screen places the current lesson in an open, ruled continuation section. Course progress and laboratory access follow as related open sections; on desktop progress receives more width and a divider separates the shortcut.
 - The laboratory is denser than lesson pages because controls and results must remain visible as a working system.
 - Establish section hierarchy with type scale, rules, alignment and spacing before adding a surface.
 - Preserve negative space around a primary task; do not fill it with badges, fake statistics or decorative widgets.
@@ -122,11 +122,11 @@ These rules prevent default template behavior. They are not blanket bans; any ex
 1. No repetitive three-card layouts without a content-driven reason.
 2. No unnecessary cards or nested card containers.
 3. No default centered hero template.
-4. No decorative gradients or glows without brand justification.
+4. No decorative gradients, glows, accent-colored panel borders or shadows on routine surfaces.
 5. No arbitrary glassmorphism.
 6. No repetitive spacing applied indiscriminately.
 7. No meaningless animations or excessive hover effects.
-8. No icons used purely as visual filler.
+8. No icons used purely as visual filler, and no automatic tinted square behind section icons.
 9. No generic marketing copy.
 10. No fabricated metrics or decorative charts.
 11. No random asymmetry introduced just to appear unique.
@@ -165,11 +165,11 @@ These rules govern all future audits and refactors. A card, icon, border, shadow
 - Do not place two equally strong primary buttons side by side.
 - Primary buttons must remain clearly identifiable as controls through solid fill, contrast, shape and spacing.
 - Primary actions use restrained emphasis, never a large colored glow or soft luminous shadow.
-- Hover states should use a precise color or border shift with, at most, a short neutral shadow; they must not feel flashy.
+- Hover states use a precise color or border shift; do not add glow, shadows or movement.
 
 ### Cards and panels
 
-- A full panel is justified for the continue-learning task, experiment settings, charts, data tables and code.
+- Use a full panel when a chart, code sample or other bounded working surface benefits from it. The home continuation section, laboratory settings, result interpretation and progress summary use open layouts and structural rules.
 - Course and progress lists may remain open, while secondary shortcuts, empty states and data-management sections use panels when the panel improves discoverability or protects an action.
 - Avoid a card inside a card. Internal grouping uses dividers and spacing.
 - Do not flatten a functional card into a heading and paragraph unless the resulting structure is demonstrably clearer.
@@ -185,7 +185,7 @@ These rules govern all future audits and refactors. A card, icon, border, shadow
 
 - Desktop uses a persistent 232px sidebar; mobile uses a fixed four-item bottom navigation.
 - Active desktop items use a restrained filled surface plus mint icon/rule treatment; mobile items may use a compact mint-tinted selected background.
-- Mobile top chrome is compact and may use a subtle backdrop blur to preserve separation while scrolling. Navigation labels remain visible.
+- Mobile top chrome is compact and opaque. Navigation labels remain visible.
 
 ### Modals and dropdowns
 
@@ -222,7 +222,7 @@ These rules govern all future audits and refactors. A card, icon, border, shadow
 - Mobile breakpoint behavior begins from a single readable column with `16px` gutters and fixed bottom navigation.
 - At tablet widths, increase gutters and line length before adding columns.
 - Desktop introduces the sidebar and task-driven columns; do not create columns merely because space exists.
-- Laboratory settings stack above the chart until the `xl` layout can support a 340px control rail without compressing the graph.
+- Laboratory settings stack above the chart until the `xl` layout can support a 340px control rail without compressing the graph. Use a divider to group the rail; keep the chart as the principal bounded surface. Place the numerical table and interpretation below, followed by research notes and saving. Keep assumptions and source disclosures visible, and let tables scroll horizontally.
 - Data tables scroll horizontally rather than shrinking labels into illegibility.
 - Buttons may become full-width on mobile when they are the primary continuation action. Secondary actions retain visible button treatment; only tertiary text actions should collapse to content width.
 - Responsive adaptation must reconsider priority: keep headings, task controls and feedback visible before supporting detail. Avoid blindly stacking decorative blocks.

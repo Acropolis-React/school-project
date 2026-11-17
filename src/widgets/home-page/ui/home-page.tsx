@@ -43,7 +43,7 @@ export function HomePage() {
         hydrated={hydrated}
         hasCompletedFirstLesson={hasCompletedFirstLesson}
       />
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,1.45fr)_minmax(300px,0.55fr)]">
+      <div className="grid gap-8 lg:grid-cols-[minmax(0,1.45fr)_minmax(260px,0.55fr)] lg:gap-12">
         <CourseProgressSummary
           completedLessonSlugs={progress.completedLessonSlugs}
         />

@@ -1,4 +1,4 @@
-import { ArrowRight, Check, Layers3 } from "lucide-react";
+import { ArrowRight, Check } from "lucide-react";
 import { lessons } from "@/entities/lesson";
 import { ButtonLink } from "@/shared/ui";
 
@@ -13,18 +13,9 @@ export function CourseProgressSummary({
   const coursePercent = Math.round((completed / lessons.length) * 100);
 
   return (
-    <section
-      className="rounded-xl border border-border-strong bg-surface p-5 shadow-[0_4px_12px_rgba(0,0,0,0.16)] sm:p-6"
-      aria-labelledby="progress-heading"
-    >
+    <section className="min-w-0" aria-labelledby="progress-heading">
       <div className="flex items-end justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <span
-            aria-hidden="true"
-            className="grid h-10 w-10 place-items-center rounded-lg border border-accent/25 bg-accent/10 text-accent"
-          >
-            <Layers3 size={19} />
-          </span>
+        <div>
           <div>
             <h2 id="progress-heading" className="text-lg font-semibold">
               Прогресс курса

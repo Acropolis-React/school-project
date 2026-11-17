@@ -54,18 +54,21 @@ Open `/lab`, choose a theoretical comparison or an instrumented operation-count 
 
 The UI must be restrained and useful: compact navigation, clear typography, neutral colors and one accent, helpful empty/loading/error states, responsive layout, accessible controls, no heavy animation or decorative landing page. **All user-facing text is in Russian.** Graphs need labeled axes, units, legends, and a corresponding data table or accessible equivalent.
 
-## 5. Six-lesson MVP curriculum
+## 5. Seven-lesson curriculum
 
 Each lesson follows the same configurable lesson runner, not a separate hand-built page. The components are short theory, code/reasoning example, prediction, simulation, interpretation and practice.
+
+The experiment step includes a guided research question, learner hypothesis, preconfigured theoretical or instrumented execution, results, and a checked conclusion with retry. A correct conclusion records assignment completion; running alone does not. Previously completed lessons remain complete.
 
 | # | Slug | Learning outcome | Model activity |
 | --- | --- | --- | --- |
 | 1 | `what-is-big-o` | Explain `n`, basic operations, asymptotic behavior and Big O | Compare linear and quadratic curves |
 | 2 | `linear-and-quadratic` | Analyze sequential and nested loops; `O(1)`, `O(n)`, `O(n²)` | Predict doubling effects |
-| 3 | `logarithmic` | Understand repeated halving and binary search preconditions | Compare linear / logarithmic growth |
-| 4 | `n-log-n` | Understand `n log n`, contrast sorting approaches | Compare `n²` vs `n log n` curves |
-| 5 | `input-cases` | Recognize best, average and worst cases and why input matters | Compare explicitly explained model scenarios |
-| 6 | `analyze-code` | Derive complexity from unfamiliar short C++ snippets | Mixed exercises + final assessment |
+| 3 | `same-complexity-different-costs` | Distinguish asymptotic bounds from exact counts and constant factors | Compare instrumented array writes for two quadratic sorts |
+| 4 | `logarithmic` | Understand repeated halving and binary search preconditions | Compare linear / logarithmic growth |
+| 5 | `n-log-n` | Understand `n log n`, contrast sorting approaches | Compare `n²` vs `n log n` curves |
+| 6 | `input-cases` | Recognize best, average and worst cases and why input matters | Compare explicitly explained model scenarios |
+| 7 | `analyze-code` | Derive complexity from unfamiliar short C++ snippets | Mixed exercises + final assessment |
 
 **Important accuracy rules:** Big O is an asymptotic upper bound, not an exact operation count; explain when a bound is not tight. `Θ` is a tight bound, when appropriate. Nested loops are not always quadratic; inspect loop bounds. Binary search assumes sorted input. Theoretical complexity does not imply identical runtime for all implementations. Simulations illustrate growth but cannot prove the exact complexity of an unknown algorithm.
 
@@ -84,11 +87,15 @@ Answers are evaluated by deterministic pure functions, with a meaningful explana
 
 **Theoretical source:** functions `1`, `log₂(n)`, `n`, `n·log₂(n)`, and `n²` for positive `n`, optionally with documented scaling for illustration. These are **not real elapsed times or counted operations**.
 
-**Experimental source:** the trusted TypeScript engine executes linear search, binary search, bubble sort, insertion sort, and merge sort on bounded seeded inputs. It reports exact comparisons, swaps, array reads/writes, or the documented total. Counts describe these implementations and are not milliseconds.
+**Experimental source:** the trusted TypeScript engine executes linear search, binary search, bubble sort, insertion sort, merge sort, and Quick Sort on bounded seeded inputs. It reports exact comparisons, swaps, array reads/writes, or the documented total. Counts describe these implementations and are not milliseconds.
 
 **Controls:** choose a source and family, one or more comparable algorithms, a bounded input-size range, point count, input distribution, operation metric, and reproducible seed. Search experiments can also choose target placement. Binary search requires sorted input.
 
-**Examples:** Bubble Sort / Insertion Sort / Merge Sort (sorting), Linear Search / Binary Search (search). Algorithm cards describe use, assumptions, relevant theoretical growth and best/average/worst-case distinctions where needed. For model comparisons, label what each curve represents; do not fabricate data-distribution-dependent benchmark results. A choice of random/sorted/reversed input may be omitted until a defensible model or real execution supports it.
+The laboratory also provides editable, reproducible experiment presets, including matched sorted and random input cases. A preset can be opened directly through `/lab?preset=<id>`; an `exploration` link takes precedence when both are present. Presets run through the same instrumented provider as manual configurations.
+
+Preset IDs are `same-complexity`, `input-sorted`, `input-random`, `linear-vs-binary`, and `quadratic-vs-nlogn`.
+
+**Examples:** Bubble Sort / Insertion Sort / Merge Sort / Quick Sort (sorting), Linear Search / Binary Search (search). Algorithm cards describe use, assumptions, relevant theoretical growth and best/average/worst-case distinctions where needed. Quick Sort's illustrative theoretical curve represents average growth for random orderings of distinct elements; its deterministic last-element pivot has quadratic worst-case behavior. For model comparisons, label what each curve represents; do not fabricate data-distribution-dependent benchmark results.
 
 **Outputs:** interactive chart, exact table, interpretation, stated assumptions, and an explicit provenance badge. Saved research includes a custom title, configuration, optional hypothesis/conclusion, editing, and reproducible reopening; timestamps describe record changes, not algorithm timing.
 
@@ -104,7 +111,7 @@ The theoretical and instrumented providers share the same laboratory presentatio
 
 ## 9. Priorities and scope
 
-**P0:** usable app layout; curriculum navigation; one end-to-end lesson then six lessons; pure model generator; free lab with real interactive inputs, correctly labeled theoretical charts/tables; deterministic exercise checking; local lesson progress; accessible, responsive experience.
+**P0:** usable app layout; curriculum navigation; seven lessons; pure model generator; free lab with real interactive inputs, correctly labeled theoretical charts/tables; deterministic exercise checking; local lesson progress; accessible, responsive experience.
 
 **P1:** saved research records; review of mistakes; deeper unknown-algorithm classification exercises; polishing progress reports.
 
@@ -115,7 +122,7 @@ The theoretical and instrumented providers share the same laboratory presentatio
 ## 10. Acceptance criteria
 
 1. A new visitor can learn without registration and reach a working lesson within one click from `/learn`.
-2. At least one end-to-end lesson is built and manually verified before expanding to all six.
+2. Each lesson follows an end-to-end learning flow with verified exercises.
 3. A user can change valid lab settings and see consistent data, chart and explanation updates.
 4. The same configuration always generates the same model points.
 5. All charts explicitly distinguish theoretical simulation from real measurement.

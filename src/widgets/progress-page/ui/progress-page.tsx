@@ -30,7 +30,7 @@ export function ProgressPage() {
       />
       {!hydrated || !savedExplorations.hydrated ? (
         <output
-          className="h-32 animate-pulse rounded-xl border border-border-strong bg-surface shadow-[0_4px_12px_rgba(0,0,0,0.14)]"
+          className="h-32 animate-pulse rounded-xl border border-border-strong bg-surface"
           aria-label="Загрузка прогресса"
         />
       ) : (

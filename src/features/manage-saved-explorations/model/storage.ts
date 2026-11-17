@@ -111,7 +111,8 @@ function isSavedConfig(value: unknown): value is LabExperimentConfig {
     return false;
 
   const includesQuadraticSort = config.selectedIds.some(
-    (id) => id === "bubble-sort" || id === "insertion-sort",
+    (id) =>
+      id === "bubble-sort" || id === "insertion-sort" || id === "quick-sort",
   );
   const maxSize =
     config.source === "theoretical"

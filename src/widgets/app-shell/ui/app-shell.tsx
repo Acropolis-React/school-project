@@ -81,7 +81,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 key={item.href}
                 href={item.href}
                 aria-current={active ? "page" : undefined}
-                className={`relative flex min-h-11 items-center gap-3 rounded-lg px-3 text-sm font-medium transition-[background-color,color,box-shadow] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent ${active ? "bg-surface-raised text-text-primary shadow-[inset_0_0_0_1px_rgba(76,201,166,0.08),0_5px_16px_rgba(0,0,0,0.14)]" : "text-text-secondary hover:bg-surface-raised hover:text-text-primary"}`}
+                className={`relative flex min-h-11 items-center gap-3 rounded-lg px-3 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent ${active ? "bg-surface-raised text-text-primary" : "text-text-secondary hover:bg-surface-raised hover:text-text-primary"}`}
               >
                 {active ? (
                   <span className="absolute inset-y-2 left-0 w-0.5 rounded-full bg-accent" />
@@ -102,7 +102,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         </p>
       </aside>
 
-      <header className="sticky top-0 z-20 flex h-15 items-center justify-between border-b border-border bg-app/96 px-4 backdrop-blur-sm lg:hidden">
+      <header className="sticky top-0 z-20 flex h-15 items-center justify-between border-b border-border bg-app px-4 lg:hidden">
         <Brand />
         <span className="text-xs font-medium text-text-secondary">
           Изучаем Big O

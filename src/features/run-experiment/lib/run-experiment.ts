@@ -11,6 +11,7 @@ import {
   complexityModels,
   type LabExperimentConfig,
 } from "@/entities/experiment";
+import { experimentSourceMetadata } from "../model/source-metadata";
 import type {
   ExperimentDataPoint,
   ExperimentSeriesDefinition,
@@ -29,6 +30,8 @@ const instrumentedAssumptions: Record<AlgorithmId, string> = {
   "insertion-sort": "Стабильная версия со сдвигами элементов вправо.",
   "merge-sort":
     "Стабильная рекурсивная версия с одним вспомогательным массивом.",
+  "quick-sort":
+    "Последний элемент — опорный; разделение Ломуто, без самообменов. В среднем O(n log n) для случайного порядка различных элементов, в худшем случае O(n²).",
 };
 
 function isSearchAlgorithmId(value: string): value is SearchAlgorithmId {
@@ -39,7 +42,8 @@ function isSortingAlgorithmId(value: string): value is SortingAlgorithmId {
   return (
     value === "bubble-sort" ||
     value === "insertion-sort" ||
-    value === "merge-sort"
+    value === "merge-sort" ||
+    value === "quick-sort"
   );
 }
 
@@ -119,16 +123,16 @@ function runTheoretical(
     metric: "model-value",
     points,
     series,
-    disclosure: "Теоретическая модель · не реальные измерения",
+    disclosure: experimentSourceMetadata.theoretical.disclosure,
     yAxisLabel: "Модельное значение, усл. ед.",
     tableCaption: "Теоретические модельные значения выбранных рядов",
     assumptions: [
-      "Точки вычислены по математическим функциям роста, а алгоритмы не запускались.",
+      "Точки вычислены по математическим функциям роста и округлены до целых; алгоритмы не запускались.",
       "Коэффициенты нормализованы для учебного сравнения и не обозначают время или точные операции.",
     ],
     observations: [
       "Сравнивайте форму и скорость роста кривых, а не абсолютные значения между разными реализациями.",
-      "Big O описывает асимптотическое поведение и не заменяет точный анализ конкретного кода.",
+      "Big O описывает асимптотическую верхнюю границу, а не точную формулу числа операций. Одинаковая оценка не означает одинаковое число операций.",
     ],
     config,
   };
@@ -202,6 +206,16 @@ function runInstrumented(
       "Случайные входы являются воспроизводимыми перестановками: повтор с тем же seed даёт те же точные значения.",
     );
   }
+  if (config.family === "sorting") {
+    observations.push(
+      "Алгоритмы с одинаковой оценкой O(n²) могут выполнять разное число операций: влияют константы, распределение входа и детали реализации. Сравнивайте одну и ту же метрику на одинаковых входах.",
+    );
+    if (config.selectedIds.includes("quick-sort")) {
+      observations.push(
+        "Быстрая сортировка выбирает последний элемент опорным. На отсортированном или обратном входе разделения неравномерны: число сравнений квадратично. Для случайного порядка различных элементов средняя оценка — O(n log n); отдельный запуск не доказывает её.",
+      );
+    }
+  }
   if (config.metric === "swaps" && config.family === "sorting") {
     observations.push(
       "Нулевые обмены у сортировки вставками и слиянием корректны: они используют записи и сдвиги, а не явный swap.",
@@ -221,13 +235,14 @@ function runInstrumented(
     metric: config.metric,
     points,
     series,
-    disclosure: "Точные счётчики операций · не время выполнения",
+    disclosure: experimentSourceMetadata.instrumented.disclosure,
     yAxisLabel: `${getMetricLabel(config.metric)}, количество`,
     tableCaption: `Точные значения метрики «${getMetricLabel(config.metric)}»`,
     assumptions: [
       `Распределение: ${getDistributionLabel(config.distribution)}; базовый seed: ${config.seed}.`,
       "Не учитываются проверки границ циклов, работа с индексами, рекурсия, выделение памяти, проверка входа и копирование результата.",
-      "Итоговая метрика равна сумме сравнений, чтений и записей; обмены повторно в сумму не добавляются.",
+      "Счётчики получены при выполнении инструментированных алгоритмов TypeScript, без формул и замеров времени.",
+      "Сумма сравнений, чтений и записей невзвешенная и не является универсальной оценкой производительности; обмены повторно не добавляются.",
     ],
     observations,
     config,

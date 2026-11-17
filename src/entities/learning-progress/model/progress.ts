@@ -7,19 +7,21 @@ export type AnswerRecord = {
 };
 
 export type LearningProgress = {
-  version: 2;
+  version: 3;
   lastLessonSlug: string;
   lessonSteps: Record<string, number>;
   completedLessonSlugs: string[];
   answers: AnswerRecord[];
+  completedAssignments: string[];
 };
 
 export const emptyProgress: LearningProgress = {
-  version: 2,
+  version: 3,
   lastLessonSlug: "what-is-big-o",
   lessonSteps: {},
   completedLessonSlugs: [],
   answers: [],
+  completedAssignments: [],
 };
 
 const STORAGE_KEY = "algolab-progress-v1";
@@ -33,7 +35,10 @@ export function parseProgress(value: string | null): LearningProgress {
 
   try {
     const parsed: unknown = JSON.parse(value);
-    if (!isRecord(parsed) || (parsed.version !== 1 && parsed.version !== 2))
+    if (
+      !isRecord(parsed) ||
+      (parsed.version !== 1 && parsed.version !== 2 && parsed.version !== 3)
+    )
       return emptyProgress;
 
     const lessonSteps = isRecord(parsed.lessonSteps)
@@ -51,7 +56,7 @@ export function parseProgress(value: string | null): LearningProgress {
     const completedLessonSlugs = Array.isArray(parsed.completedLessonSlugs)
       ? parsed.completedLessonSlugs
           .filter((item): item is string => typeof item === "string")
-          .slice(0, 6)
+          .slice(0, 100)
       : [];
 
     const answers: AnswerRecord[] = Array.isArray(parsed.answers)
@@ -96,7 +101,7 @@ export function parseProgress(value: string | null): LearningProgress {
       : [];
 
     return {
-      version: 2,
+      version: 3,
       lastLessonSlug:
         typeof parsed.lastLessonSlug === "string"
           ? parsed.lastLessonSlug
@@ -104,6 +109,17 @@ export function parseProgress(value: string | null): LearningProgress {
       lessonSteps,
       completedLessonSlugs,
       answers,
+      completedAssignments:
+        parsed.version === 3 && Array.isArray(parsed.completedAssignments)
+          ? [
+              ...new Set(
+                parsed.completedAssignments.filter(
+                  (id): id is string =>
+                    typeof id === "string" && id.length <= 100,
+                ),
+              ),
+            ].slice(0, 50)
+          : [],
     };
   } catch {
     return emptyProgress;

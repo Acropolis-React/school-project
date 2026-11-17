@@ -73,6 +73,18 @@ export const algorithms: AlgorithmModel[] = [
     color: "#60a5fa",
     evaluate: (n) => n * Math.ceil(Math.log2(n)),
   },
+  {
+    id: "quick-sort",
+    family: "sorting",
+    label: "Быстрая сортировка",
+    shortLabel: "Быстрая",
+    complexity: "O(n log n) в среднем · O(n²) в худшем случае",
+    formula: "n · ⌈log₂(n)⌉",
+    assumption:
+      "Иллюстративная модель среднего роста при случайном порядке различных элементов; последний элемент — опорный. Отсортированный или обратный вход даёт квадратичный худший случай.",
+    color: "#fb923c",
+    evaluate: (n) => n * Math.ceil(Math.log2(n)),
+  },
 ];
 
 export function getAlgorithmsByFamily(
