@@ -57,7 +57,7 @@ export function QuestionBlock({
           </pre>
         </figure>
       ) : null}
-      <fieldset className="mt-6 space-y-2">
+      <fieldset className="mt-6 space-y-2" disabled={Boolean(result?.correct)}>
         <legend className="sr-only">Выберите один вариант</legend>
         {question.choices.map((item) => (
           <label
@@ -78,18 +78,30 @@ export function QuestionBlock({
           </label>
         ))}
       </fieldset>
-      <Button
-        type="button"
-        disabled={!choice || submitted}
-        onClick={submit}
-        className="mt-5 w-full sm:w-auto"
-      >
-        {result
-          ? result.correct
-            ? "Ответ принят"
-            : "Выберите другой ответ"
-          : "Проверить ответ"}
-      </Button>
+      <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+        <Button
+          type="button"
+          disabled={!choice || submitted}
+          onClick={submit}
+          className="w-full sm:w-auto"
+        >
+          {result
+            ? result.correct
+              ? "Ответ принят"
+              : "Выберите другой ответ"
+            : "Проверить ответ"}
+        </Button>
+        {result?.correct ? (
+          <Button
+            type="button"
+            variant="secondary"
+            className="w-full sm:w-auto"
+            onClick={() => onStateChange({ choice: "", submitted: false })}
+          >
+            Повторить задачу
+          </Button>
+        ) : null}
+      </div>
       {result ? (
         <output
           className={`mt-4 flex gap-3 border-l-2 p-4 text-sm leading-6 ${result.correct ? "border-accent bg-accent/8 text-text-primary" : "border-error bg-error/8 text-text-primary"}`}

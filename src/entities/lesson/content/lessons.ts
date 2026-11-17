@@ -1,8 +1,12 @@
 import type { Lesson } from "../model/types";
 import { analyzeCodePractice } from "./analyze-code-questions";
+import { codeTraceExercise } from "./code-trace-exercise";
 import { introductoryLessons } from "./introductory-lessons";
 import { lessonAdditions } from "./lesson-additions";
 import { lessonTheory } from "./lesson-theory";
+
+const analyzeCodeExample =
+  "for (int i = 1; i < n; i *= 2) {\n  for (int j = 0; j < n; ++j) {\n    inspect(i, j);\n  }\n}";
 
 const baseLessons: Omit<Lesson, "theory" | "takeaway">[] = [
   ...introductoryLessons,
@@ -136,11 +140,13 @@ const baseLessons: Omit<Lesson, "theory" | "takeaway">[] = [
     description:
       "Итоговый алгоритм рассуждения и смешанные задачи по короткому C++ коду.",
     duration: "18 мин",
-    code: "for (int i = 1; i < n; i *= 2) {\n  for (int j = 0; j < n; ++j) {\n    inspect(i, j);\n  }\n}",
+    code: analyzeCodeExample,
     codeCaption: "Внешний цикл удваивает i, внутренний проходит n элементов.",
     hypothesis: {
       id: "analyze-code-hypothesis",
-      prompt: "Сколько раз примерно выполняется внешний цикл?",
+      prompt:
+        "Сколько раз примерно выполняется внешний цикл в этом фрагменте при n ≥ 2?",
+      code: analyzeCodeExample,
       choices: [
         { id: "log", label: "log₂ n" },
         { id: "n", label: "n" },
@@ -152,8 +158,9 @@ const baseLessons: Omit<Lesson, "theory" | "takeaway">[] = [
     },
     experimentModels: ["linearithmic", "quadratic"],
     interpretation: [
-      "Умножаем число внешних итераций log n на n внутренних: получаем Θ(n log n).",
-      "Название переменной и синтаксис цикла не заменяют анализ границ.",
+      "В предыдущей задаче при n = 10 внешний цикл проходит значения 1, 2, 4 и 8. На каждом проходе внутренний цикл делает 10 вызовов: 4 · 10 = 40.",
+      "Для общего n внешний цикл выполняется ⌈log₂ n⌉ раз, а внутренний — n раз на каждом проходе. Всего n · ⌈log₂ n⌉ вызовов, что даёт Θ(n log n) при n ≥ 2.",
+      "Анализируйте границы каждого цикла: если число внутренних итераций зависит от внешней переменной, работу нужно суммировать, а не умножать на одно и то же число.",
     ],
     practice: analyzeCodePractice,
   },
@@ -175,6 +182,27 @@ export const getLesson = (slug: string) =>
 export function getLessonQuestion(lessonSlug: string, questionId: string) {
   const lesson = getLesson(lessonSlug);
   if (!lesson) return undefined;
+  if (lessonSlug === "analyze-code" && questionId === codeTraceExercise.id)
+    return codeTraceExercise;
   if (lesson.hypothesis.id === questionId) return lesson.hypothesis;
   return lesson.practice.find((question) => question.id === questionId);
+}
+
+// The optional guide is outside the core curriculum and its progress.
+export const bonusGuide = {
+  kind: "bonus" as const,
+  slug: "course-reference",
+  title: "Повторение курса",
+  description:
+    "Краткий справочник по всем изученным темам: определения, формулы, примеры и основные правила.",
+};
+export function getCoreCourseProgress(completedSlugs: readonly string[]) {
+  const completed = lessons.filter((lesson) =>
+    completedSlugs.includes(lesson.slug),
+  ).length;
+  return {
+    completed,
+    total: lessons.length,
+    unlocked: completed === lessons.length,
+  };
 }

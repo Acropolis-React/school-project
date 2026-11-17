@@ -55,7 +55,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     <div className="app-background min-h-dvh text-text-primary lg:grid lg:grid-cols-[232px_minmax(0,1fr)]">
       <aside className="fixed inset-y-0 left-0 z-20 hidden w-[232px] flex-col border-r border-border bg-sidebar px-4 py-5 lg:flex">
         <div className="px-2">
-          <Brand href="/home" />
+          <Brand href="/" />
         </div>
         <nav aria-label="Основная навигация" className="mt-8 space-y-1">
           {navigation.map((item) => {

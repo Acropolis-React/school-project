@@ -1,5 +1,5 @@
 import { ArrowRight, Check } from "lucide-react";
-import { lessons } from "@/entities/lesson";
+import { getCoreCourseProgress, lessons } from "@/entities/lesson";
 import { ButtonLink } from "@/shared/ui";
 
 type CourseProgressSummaryProps = {
@@ -9,7 +9,7 @@ type CourseProgressSummaryProps = {
 export function CourseProgressSummary({
   completedLessonSlugs,
 }: CourseProgressSummaryProps) {
-  const completed = completedLessonSlugs.length;
+  const { completed } = getCoreCourseProgress(completedLessonSlugs);
   const coursePercent = Math.round((completed / lessons.length) * 100);
 
   return (
@@ -21,7 +21,7 @@ export function CourseProgressSummary({
               Прогресс курса
             </h2>
             <p className="mt-1 text-sm text-text-secondary">
-              {completed} из {lessons.length} уроков завершено
+              {completed}/{lessons.length} основных уроков завершено
             </p>
           </div>
         </div>

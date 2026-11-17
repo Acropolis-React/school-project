@@ -161,3 +161,9 @@ The product is successful when a learner can **independently determine and expla
 
 The root route `/` is an educational introduction and practical guide. The existing learner dashboard is available directly at `/home`; `/learn`, `/lab`, and `/progress` retain their existing roles. The guide links to the first lesson and laboratory and distinguishes theoretical model values from instrumented operation counts. Screenshots show the existing interface at mobile and desktop sizes.
 
+
+Lesson research asks for a structured prediction before the experiment and compares it with the result afterward. An incorrect prediction can still complete the investigation after review. The final code-analysis lesson replaces its unrelated search investigation with a checked trace of the lesson's nested loops. Previously completed lessons remain complete.
+
+## Optional course reference
+
+After all seven core lessons are completed, an optional theory-only reference becomes available. It does not affect course progress.

@@ -1,7 +1,8 @@
 "use client";
 
-import { lessons } from "@/entities/lesson";
+import { bonusGuide, getCoreCourseProgress, lessons } from "@/entities/lesson";
 import { useLearningProgress } from "@/features/track-lesson-progress";
+import { ButtonLink } from "@/shared/ui";
 import { ContinueLearningCard } from "./continue-learning-card";
 import { CourseProgressSummary } from "./course-progress-summary";
 import { HomeHeader } from "./home-header";
@@ -43,6 +44,30 @@ export function HomePage() {
         hydrated={hydrated}
         hasCompletedFirstLesson={hasCompletedFirstLesson}
       />
+      {hydrated &&
+      getCoreCourseProgress(progress.completedLessonSlugs).unlocked ? (
+        <section
+          className="border-t border-border pt-6"
+          aria-labelledby="bonus-heading"
+        >
+          <p className="text-xs font-semibold uppercase tracking-wider text-accent">
+            Бонус
+          </p>
+          <h2 id="bonus-heading" className="mt-2 text-lg font-semibold">
+            {bonusGuide.title}
+          </h2>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-text-secondary">
+            {bonusGuide.description}
+          </p>
+          <ButtonLink
+            href={`/learn/${bonusGuide.slug}`}
+            variant="secondary"
+            className="mt-4"
+          >
+            Открыть справочник
+          </ButtonLink>
+        </section>
+      ) : null}
       <div className="grid gap-8 lg:grid-cols-[minmax(0,1.45fr)_minmax(260px,0.55fr)] lg:gap-12">
         <CourseProgressSummary
           completedLessonSlugs={progress.completedLessonSlugs}

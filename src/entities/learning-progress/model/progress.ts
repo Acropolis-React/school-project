@@ -7,21 +7,23 @@ export type AnswerRecord = {
 };
 
 export type LearningProgress = {
-  version: 3;
+  version: 4;
   lastLessonSlug: string;
   lessonSteps: Record<string, number>;
   completedLessonSlugs: string[];
   answers: AnswerRecord[];
   completedAssignments: string[];
+  researchPredictions: Record<string, string>;
 };
 
 export const emptyProgress: LearningProgress = {
-  version: 3,
+  version: 4,
   lastLessonSlug: "what-is-big-o",
   lessonSteps: {},
   completedLessonSlugs: [],
   answers: [],
   completedAssignments: [],
+  researchPredictions: {},
 };
 
 const STORAGE_KEY = "algolab-progress-v1";
@@ -37,7 +39,10 @@ export function parseProgress(value: string | null): LearningProgress {
     const parsed: unknown = JSON.parse(value);
     if (
       !isRecord(parsed) ||
-      (parsed.version !== 1 && parsed.version !== 2 && parsed.version !== 3)
+      (parsed.version !== 1 &&
+        parsed.version !== 2 &&
+        parsed.version !== 3 &&
+        parsed.version !== 4)
     )
       return emptyProgress;
 
@@ -101,7 +106,7 @@ export function parseProgress(value: string | null): LearningProgress {
       : [];
 
     return {
-      version: 3,
+      version: 4,
       lastLessonSlug:
         typeof parsed.lastLessonSlug === "string"
           ? parsed.lastLessonSlug
@@ -110,7 +115,8 @@ export function parseProgress(value: string | null): LearningProgress {
       completedLessonSlugs,
       answers,
       completedAssignments:
-        parsed.version === 3 && Array.isArray(parsed.completedAssignments)
+        (parsed.version === 3 || parsed.version === 4) &&
+        Array.isArray(parsed.completedAssignments)
           ? [
               ...new Set(
                 parsed.completedAssignments.filter(
@@ -120,6 +126,19 @@ export function parseProgress(value: string | null): LearningProgress {
               ),
             ].slice(0, 50)
           : [],
+      researchPredictions:
+        parsed.version === 4 && isRecord(parsed.researchPredictions)
+          ? Object.fromEntries(
+              Object.entries(parsed.researchPredictions)
+                .filter(
+                  (entry): entry is [string, string] =>
+                    entry[0].length <= 100 &&
+                    typeof entry[1] === "string" &&
+                    entry[1].length <= 100,
+                )
+                .slice(0, 50),
+            )
+          : {},
     };
   } catch {
     return emptyProgress;

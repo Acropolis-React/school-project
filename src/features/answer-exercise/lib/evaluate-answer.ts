@@ -1,6 +1,8 @@
 import type { LessonQuestion } from "@/entities/lesson";
 
 const hints: Record<string, string> = {
+  "code-trace-exercise":
+    "Выпишите все значения i меньше 10, затем умножьте число внешних проходов на число внутренних вызовов.",
   "fixed-inner-loop-practice":
     "Проверьте, зависит ли граница внутреннего цикла от n. Сколько вызовов приходится на один внешний шаг?",
   "halving-count-practice":
@@ -17,8 +19,8 @@ const hints: Record<string, string> = {
     "Верхняя граница допускает разные точные числа операций и не задаёт единицы времени.",
   "big-o-classes-practice":
     "Для каждого элемента есть два независимых решения: включить его или пропустить. Сколько комбинаций это даёт?",
-  "linear-and-quadratic-hypothesis":
-    "Подставьте 2n вместо n в оба множителя выражения n · n.",
+  "linear-sequential-prediction":
+    "Последовательные части выполняются друг за другом: сложите их количества.",
   "linear-and-quadratic-practice":
     "Циклы идут друг за другом: сложите их повторения, а не перемножайте.",
   "same-complexity-hypothesis":

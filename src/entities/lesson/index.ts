@@ -1,4 +1,12 @@
-export { getLesson, getLessonQuestion, lessons } from "./content/lessons";
+export { codeTraceExercise } from "./content/code-trace-exercise";
+export {
+  bonusGuide,
+  getCoreCourseProgress,
+  getLesson,
+  getLessonQuestion,
+  lessons,
+} from "./content/lessons";
+export { referenceSections } from "./content/reference";
 export { getLessonDemonstration } from "./model/demonstration";
 export type {
   Lesson,

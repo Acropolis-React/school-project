@@ -30,6 +30,7 @@ type ProgressContextValue = {
   ) => void;
   completeLesson: (lessonSlug: string) => void;
   completeAssignment: (assignmentId: string) => void;
+  recordPrediction: (assignmentId: string, choice: string) => void;
   resetProgress: () => void;
 };
 
@@ -119,6 +120,15 @@ export function LearningProgressProvider({
           )
             ? current.completedLessonSlugs
             : [...current.completedLessonSlugs, lessonSlug],
+        }));
+      },
+      recordPrediction: (assignmentId, choice) => {
+        commit((current) => ({
+          ...current,
+          researchPredictions: {
+            ...current.researchPredictions,
+            [assignmentId]: choice,
+          },
         }));
       },
       completeAssignment: (assignmentId) => {

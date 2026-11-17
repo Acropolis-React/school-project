@@ -1,4 +1,5 @@
-import type { Lesson } from "@/entities/lesson";
+import { codeTraceExercise, type Lesson } from "@/entities/lesson";
+import { CodeTraceStep } from "./code-trace-step";
 import { GuidedExperiment } from "./guided-experiment";
 import { InterpretationResults } from "./interpretation-results";
 import { LessonTheory } from "./lesson-theory";
@@ -16,14 +17,17 @@ type LessonStepContentProps = {
 const emptyQuestionState: QuestionState = { choice: "", submitted: false };
 
 function InterpretationStep({ lesson }: { lesson: Lesson }) {
+  const isCodeAnalysis = lesson.slug === "analyze-code";
   return (
     <div>
       <h2 className="text-xl font-semibold">
-        {lesson.showModelChart === false
-          ? "Как понять результат"
-          : "Что показывает модель"}
+        {isCodeAnalysis
+          ? "Как разобрать циклы"
+          : lesson.showModelChart === false
+            ? "Как понять результат"
+            : "Что показывает модель"}
       </h2>
-      {lesson.showModelChart !== false ? (
+      {isCodeAnalysis ? null : lesson.showModelChart !== false ? (
         <MiniExperimentChart lesson={lesson} />
       ) : (
         <InterpretationResults slug={lesson.slug} />
@@ -40,7 +44,7 @@ function InterpretationStep({ lesson }: { lesson: Lesson }) {
           </div>
         ))}
       </div>
-      {lesson.showModelChart !== false ? (
+      {!isCodeAnalysis && lesson.showModelChart !== false ? (
         <div className="mt-7 border-l-2 border-warning bg-warning/8 p-4 text-sm leading-6 text-text-secondary">
           <strong className="text-text-primary">Важно:</strong> показанный
           график иллюстрирует математические функции роста, а не измеряет работу
@@ -133,7 +137,16 @@ export function LessonStepContent({
         />
       ) : null}
       {step === 2 ? (
-        <GuidedExperiment key={lesson.slug} slug={lesson.slug} />
+        lesson.slug === "analyze-code" ? (
+          <CodeTraceStep
+            state={questionStates[codeTraceExercise.id] ?? emptyQuestionState}
+            onStateChange={(state) =>
+              onQuestionStateChange(codeTraceExercise.id, state)
+            }
+          />
+        ) : (
+          <GuidedExperiment key={lesson.slug} slug={lesson.slug} />
+        )
       ) : null}
       {step === 3 ? <InterpretationStep lesson={lesson} /> : null}
       {step === 4 ? (

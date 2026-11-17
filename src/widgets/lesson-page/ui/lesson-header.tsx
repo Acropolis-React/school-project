@@ -32,20 +32,26 @@ export function LessonHeader({
       </div>
       <fieldset className="mt-5 grid grid-cols-5 gap-1.5">
         <legend className="sr-only">Прогресс урока: шаг {step + 1} из 5</legend>
-        {LESSON_STEPS.map((label, index) => (
-          <button
-            key={label}
-            type="button"
-            disabled={index > maxAccessibleStep}
-            aria-current={index === step ? "step" : undefined}
-            aria-label={`${label}: ${index === step ? "текущий шаг" : index > maxAccessibleStep ? "закрыт" : completedSteps[index] || index < step ? "пройден" : "доступен"}`}
-            title={`${label}: ${index === step ? "текущий шаг" : index > maxAccessibleStep ? "закрыт" : completedSteps[index] || index < step ? "пройден" : "доступен"}`}
-            onClick={() => onStepChange(index)}
-            className={`h-1.5 rounded-full transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent ${index === step ? "bg-accent ring-2 ring-accent/40" : index > maxAccessibleStep ? "cursor-not-allowed bg-track opacity-50" : completedSteps[index] || index < step ? "bg-accent/60" : "bg-text-secondary"}`}
-          >
-            <span className="sr-only">{label}</span>
-          </button>
-        ))}
+        {LESSON_STEPS.map((stepLabel, index) => {
+          const label =
+            lesson.slug === "analyze-code" && index === 2
+              ? "Практика"
+              : stepLabel;
+          return (
+            <button
+              key={label}
+              type="button"
+              disabled={index > maxAccessibleStep}
+              aria-current={index === step ? "step" : undefined}
+              aria-label={`${label}: ${index === step ? "текущий шаг" : index > maxAccessibleStep ? "закрыт" : completedSteps[index] || index < step ? "пройден" : "доступен"}`}
+              title={`${label}: ${index === step ? "текущий шаг" : index > maxAccessibleStep ? "закрыт" : completedSteps[index] || index < step ? "пройден" : "доступен"}`}
+              onClick={() => onStepChange(index)}
+              className={`h-1.5 rounded-full transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent ${index === step ? "bg-accent ring-2 ring-accent/40" : index > maxAccessibleStep ? "cursor-not-allowed bg-track opacity-50" : completedSteps[index] || index < step ? "bg-accent/60" : "bg-text-secondary"}`}
+            >
+              <span className="sr-only">{label}</span>
+            </button>
+          );
+        })}
       </fieldset>
     </header>
   );

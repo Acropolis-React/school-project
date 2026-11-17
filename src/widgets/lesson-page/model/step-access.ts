@@ -19,7 +19,17 @@ export function getLessonStepAccess(
     );
 
   const hypothesisPassed =
-    completed || !lesson.hypothesis || answeredCorrectly(lesson.hypothesis);
+    completed ||
+    !lesson.hypothesis ||
+    answeredCorrectly(lesson.hypothesis) ||
+    (lesson.slug === "linear-and-quadratic" &&
+      progress.answers.some(
+        (answer) =>
+          answer.lessonSlug === lesson.slug &&
+          answer.questionId === "linear-and-quadratic-hypothesis" &&
+          answer.choiceId === "four" &&
+          answer.correct,
+      ));
   const assignment = getGuidedAssignment(lesson.slug);
   const assignmentPassed =
     completed ||

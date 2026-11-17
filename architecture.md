@@ -252,7 +252,7 @@ The laboratory now exposes the engine through `features/run-experiment` as an ex
 - Save completion state and answered-exercise outcomes in localStorage; do not require login.
 - Access browser-only APIs exclusively from client-side code.
 - Use a versioned schema/key, validate parsed payloads and recover gracefully from corrupted or missing data.
-- The learning-progress payload is schema version 3. Version 1 answer records are migrated without fabricated question details; version 2 records and completed lessons are retained. Version 3 adds bounded completed guided-assignment IDs. Existing completed lessons remain complete without repeating new assignments.
+- The learning-progress payload is schema version 4. Version 1 answer records are migrated without fabricated question details; versions 2 and 3 retain their records and completions. Version 4 adds bounded research predictions. Existing completed lessons remain complete without repeating new assignments.
 - Do not treat progress saved in localStorage as portable across devices.
 - Avoid persisting huge charts or input arrays; save compact settings and results only if history is explicitly implemented.
 - Saved explorations use their own versioned, bounded store (maximum 20 items). Schema version 2 stores a custom title, optional hypothesis/conclusion, timestamps, and a validated reproducible configuration; generated arrays and chart points are never persisted. Valid version 1 configuration-only records migrate to theoretical version 2 records and remain editable.
@@ -307,3 +307,9 @@ Lesson theory follows definition → explanation → worked example → formula 
 
 The lesson catalog groups introductory definitions separately from later lessons, then assembles them in their original order. Laboratory configuration transitions and research-field validation live in the lab page model; the workspace coordinates state and presentation.
 
+
+Guided lesson research uses a structured prediction, a deterministic experiment and an explicit review before completion. Version 4 progress adds bounded prediction choices to the existing local store; versions 1–3 retain their existing completions and do not invent missing answers. The final code-analysis lesson uses a checked tracing task instead of the former search experiment. Research completion is independent of prediction correctness, and repeating an activity preserves lesson completion.
+
+## Optional course reference
+
+The seven core lessons remain the sole curriculum and progress denominator. A separate read-only reference resource is unlocked by the core completion selector and guarded after local progress hydration; this client-side gate is not server security. The guide does not record completion.

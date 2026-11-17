@@ -60,16 +60,16 @@ export const introductoryLessons: Omit<Lesson, "theory" | "takeaway">[] = [
     codeCaption:
       "Для каждой из n итераций внешний цикл запускает n внутренних.",
     hypothesis: {
-      id: "linear-and-quadratic-hypothesis",
-      prompt: "Что произойдёт с моделью n² при удвоении n?",
+      id: "linear-sequential-prediction",
+      prompt:
+        "Два последовательных цикла выполняют по n операций. Как выразить их общее число?",
       choices: [
-        { id: "double", label: "Рост примерно в 2 раза" },
-        { id: "four", label: "Рост примерно в 4 раза" },
-        { id: "eight", label: "Рост примерно в 8 раз" },
+        { id: "sum", label: "n + n" },
+        { id: "product", label: "n · n" },
+        { id: "constant", label: "1" },
       ],
-      correctChoiceId: "four",
-      explanation:
-        "(2n)² = 4n², поэтому модельное значение увеличивается в четыре раза.",
+      correctChoiceId: "sum",
+      explanation: "Последовательные части складываются: n + n = 2n.",
     },
     experimentModels: ["linear", "quadratic"],
     interpretation: [

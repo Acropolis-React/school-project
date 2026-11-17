@@ -4,6 +4,7 @@ import {
   getAnswerStats,
   getLatestMistakes,
 } from "@/entities/learning-progress";
+import { getCoreCourseProgress } from "@/entities/lesson";
 import { useSavedExplorations } from "@/features/manage-saved-explorations";
 import { useLearningProgress } from "@/features/track-lesson-progress";
 import { PageHeader } from "@/shared/ui";
@@ -17,7 +18,7 @@ import { SavedExplorationsReport } from "./saved-explorations-report";
 export function ProgressPage() {
   const { progress, hydrated, resetProgress } = useLearningProgress();
   const savedExplorations = useSavedExplorations();
-  const completed = progress.completedLessonSlugs.length;
+  const { completed } = getCoreCourseProgress(progress.completedLessonSlugs);
   const answerStats = getAnswerStats(progress.answers);
   const mistakes = getLatestMistakes(progress.answers);
   const isEmpty = completed === 0 && progress.answers.length === 0;
