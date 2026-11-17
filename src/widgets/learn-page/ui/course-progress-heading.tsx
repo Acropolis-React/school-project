@@ -8,12 +8,9 @@ export function CourseProgressHeading({ completed }: { completed: number }) {
       description="Короткие уроки: от смысла Big O до анализа незнакомого кода."
       aside={
         <div className="min-w-52">
-          <div className="flex justify-between text-xs text-text-secondary">
-            <span>Завершено</span>
-            <span>
-              {completed} / {lessons.length}
-            </span>
-          </div>
+          <p className="text-xs text-text-secondary">
+            {completed}/{lessons.length} основных уроков завершено
+          </p>
           <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-track">
             <div
               className="h-full bg-accent"

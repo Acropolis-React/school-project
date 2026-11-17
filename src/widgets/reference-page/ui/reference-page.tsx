@@ -16,12 +16,17 @@ export function ReferencePage() {
     progress.completedLessonSlugs,
   ).unlocked;
   useEffect(() => {
-    if (hydrated && unlocked && window.location.hash) {
-      const id = decodeURIComponent(window.location.hash.slice(1));
-      requestAnimationFrame(() =>
-        document.getElementById(id)?.scrollIntoView(),
-      );
+    if (!hydrated || !unlocked || !window.location.hash) return;
+    let id: string;
+    try {
+      id = decodeURIComponent(window.location.hash.slice(1));
+    } catch {
+      return;
     }
+    const frame = requestAnimationFrame(() =>
+      document.getElementById(id)?.scrollIntoView(),
+    );
+    return () => cancelAnimationFrame(frame);
   }, [hydrated, unlocked]);
   if (!hydrated)
     return (
@@ -63,6 +68,7 @@ export function ReferencePage() {
       </header>
       <nav
         id="contents"
+        tabIndex={-1}
         aria-label="Содержание справочника"
         className="mt-8 scroll-mt-20 border-y border-border py-5"
       >
@@ -84,12 +90,15 @@ export function ReferencePage() {
         <section
           key={section.id}
           id={section.id}
+          tabIndex={-1}
           className="scroll-mt-20 border-b border-border py-7"
         >
           <h2 className="text-xl font-semibold">{section.title}</h2>
           <div className="mt-4 max-w-3xl space-y-3 text-sm leading-7 text-text-secondary sm:text-base">
             {section.paragraphs.map((paragraph) => (
-              <p key={paragraph}>{paragraph}</p>
+              <p key={paragraph} className="wrap-break-word">
+                {paragraph}
+              </p>
             ))}
           </div>
           <a

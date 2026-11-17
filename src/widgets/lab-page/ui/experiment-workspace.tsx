@@ -107,6 +107,7 @@ export function ExperimentWorkspace() {
     setConfig(presetConfig);
     setLoadedPresetId(preset.id);
     setEditingId(null);
+    setResearch(emptyResearch);
     setError("");
     setResearchError("");
     setNotice("");
@@ -188,7 +189,6 @@ export function ExperimentWorkspace() {
   };
 
   const persistResearch = () => {
-    const title = research.title.trim();
     const validationError = validateResearch(research);
     if (validationError) {
       setResearchError(validationError);
@@ -196,7 +196,7 @@ export function ExperimentWorkspace() {
     }
 
     const input = {
-      title,
+      title: research.title.trim(),
       hypothesis: research.hypothesis,
       conclusion: research.conclusion,
       config,

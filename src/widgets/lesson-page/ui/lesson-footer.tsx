@@ -22,6 +22,7 @@ export function LessonFooter({
         type="button"
         variant="secondary"
         disabled={step === 0}
+        aria-label="Предыдущий шаг"
         onClick={() => onStepChange(step - 1)}
       >
         <ArrowLeft size={16} />
@@ -52,9 +53,7 @@ export function LessonFooter({
         </ButtonLink>
       ) : (
         <span className="text-right text-xs leading-5 text-text-muted">
-          Выполните исследование и практику,
-          <br />
-          чтобы завершить урок
+          Ответьте верно на все вопросы практики, чтобы завершить урок.
         </span>
       )}
     </footer>

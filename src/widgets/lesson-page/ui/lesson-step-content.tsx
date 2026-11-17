@@ -1,6 +1,11 @@
+import { useState } from "react";
 import { codeTraceExercise, type Lesson } from "@/entities/lesson";
 import { CodeTraceStep } from "./code-trace-step";
-import { GuidedExperiment } from "./guided-experiment";
+import {
+  type GuidedAttempt,
+  GuidedExperiment,
+  initialGuidedAttempt,
+} from "./guided-experiment";
 import { InterpretationResults } from "./interpretation-results";
 import { LessonTheory } from "./lesson-theory";
 import { MiniExperimentChart } from "./mini-experiment-chart";
@@ -44,13 +49,6 @@ function InterpretationStep({ lesson }: { lesson: Lesson }) {
           </div>
         ))}
       </div>
-      {!isCodeAnalysis && lesson.showModelChart !== false ? (
-        <div className="mt-7 border-l-2 border-warning bg-warning/8 p-4 text-sm leading-6 text-text-secondary">
-          <strong className="text-text-primary">Важно:</strong> показанный
-          график иллюстрирует математические функции роста, а не измеряет работу
-          конкретных программ.
-        </div>
-      ) : null}
     </div>
   );
 }
@@ -68,16 +66,13 @@ function PracticeStep({
       {lesson.practice.length > 1 ? (
         <div className="mb-8 border-l-2 border-accent bg-accent/8 p-4">
           <h2 className="font-semibold">
-            {lesson.practice.some((question) => question.code)
+            {lesson.slug === "analyze-code"
               ? "Разбор незнакомого кода"
               : "Проверьте понимание"}
           </h2>
           <p className="mt-1 text-sm leading-6 text-text-secondary">
-            {lesson.practice.some((question) => question.code)
-              ? "Классифицируйте каждый фрагмент. "
-              : "Ответьте на каждый вопрос. "}
-            Урок завершится, когда все задачи будут решены верно; после ошибки
-            можно попробовать снова.
+            Решите все задачи, чтобы завершить урок. После ошибки можно
+            попробовать снова.
           </p>
         </div>
       ) : null}
@@ -122,6 +117,8 @@ export function LessonStepContent({
   onQuestionStateChange,
   practicePassed,
 }: LessonStepContentProps) {
+  const [guidedAttempt, setGuidedAttempt] =
+    useState<GuidedAttempt>(initialGuidedAttempt);
   return (
     <article className="py-8 sm:py-10">
       {step === 0 ? <LessonTheory lesson={lesson} /> : null}
@@ -129,7 +126,7 @@ export function LessonStepContent({
         <QuestionBlock
           lessonSlug={lesson.slug}
           question={lesson.hypothesis}
-          heading="Сформулируйте гипотезу"
+          heading="Проверьте понимание"
           state={questionStates[lesson.hypothesis.id] ?? emptyQuestionState}
           onStateChange={(state) =>
             onQuestionStateChange(lesson.hypothesis.id, state)
@@ -145,7 +142,11 @@ export function LessonStepContent({
             }
           />
         ) : (
-          <GuidedExperiment key={lesson.slug} slug={lesson.slug} />
+          <GuidedExperiment
+            slug={lesson.slug}
+            attempt={guidedAttempt}
+            onAttemptChange={setGuidedAttempt}
+          />
         )
       ) : null}
       {step === 3 ? <InterpretationStep lesson={lesson} /> : null}

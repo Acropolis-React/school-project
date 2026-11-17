@@ -67,7 +67,7 @@ export function MistakeReview({ mistakes }: { mistakes: AnswerRecord[] }) {
                     </p>
                   </div>
                   <ButtonLink
-                    href={`/learn/${lesson.slug}`}
+                    href={`/learn/${lesson.slug}#${question.id}`}
                     variant="secondary"
                     className="w-full shrink-0 sm:w-auto"
                   >

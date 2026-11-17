@@ -68,6 +68,10 @@ export function ExperimentChart({ result }: ExperimentChartProps) {
             />
             <XAxis
               dataKey="inputSize"
+              type="number"
+              domain={["dataMin", "dataMax"]}
+              ticks={result.points.map((point) => point.inputSize)}
+              allowDecimals={false}
               stroke="#718096"
               tickLine={false}
               axisLine={{ stroke: "#334155" }}
@@ -103,6 +107,8 @@ export function ExperimentChart({ result }: ExperimentChartProps) {
                 border: "1px solid #293241",
                 borderRadius: 8,
                 fontSize: 12,
+                maxWidth: "60vw",
+                whiteSpace: "normal",
               }}
               labelStyle={{ color: "#e6edf3" }}
               labelFormatter={(label) => `Размер входа n = ${label}`}

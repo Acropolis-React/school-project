@@ -88,7 +88,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       </aside>
 
       <header className="sticky top-0 z-20 flex h-15 items-center justify-between border-b border-border bg-app px-4 lg:hidden">
-        <Brand href="/home" />
+        <Brand href="/" />
         <span className="text-xs font-medium text-text-secondary">
           Изучаем Big O
         </span>

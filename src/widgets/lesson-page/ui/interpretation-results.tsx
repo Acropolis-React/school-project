@@ -14,8 +14,8 @@ export function InterpretationResults({ slug }: { slug: LessonSlug }) {
     >
       <h3 className="font-semibold">Данные исследования</h3>
       <p className="mt-2 text-sm leading-6 text-text-secondary">
-        Результаты воспроизведены с настройками предыдущего шага. Входные данные
-        и подсчёт детерминированы; время выполнения не измеряется.
+        Те же входы и правила подсчёта, что на предыдущем шаге. В таблицах
+        показано число операций.
       </p>
       {results.map((result, index) => (
         <div key={result.config.targetPosition} className="mt-4">
@@ -24,7 +24,7 @@ export function InterpretationResults({ slug }: { slug: LessonSlug }) {
               {index === 0 ? "Первый элемент" : "Элемент отсутствует"}
             </h4>
           ) : null}
-          <ExperimentTable result={result} />
+          <ExperimentTable result={result} compact />
         </div>
       ))}
     </section>

@@ -27,7 +27,7 @@ export function getLessonDemonstration(
   switch (slug) {
     case "what-is-big-o":
       return {
-        explanation: `При n = ${n} полный проход посещает ${n} элементов. Перебор всех упорядоченных пар, включая пару элемента с собой, даёт ${n} · ${n} = ${n * n} посещений. Увеличьте n вдвое и сравните изменения.`,
+        explanation: `При n = ${n} один проход посещает ${n} элементов. Если для каждого элемента снова пройти весь список, получится ${n} · ${n} = ${n * n} пар. Увеличьте n вдвое и сравните изменения.`,
         steps: ["Один элемент за шаг", "n элементов", "n × n пар"],
         rows: [
           { label: "Проход: n", value: n },
@@ -73,7 +73,7 @@ export function getLessonDemonstration(
         steps: sizes.map((size) => `${size}`),
         rows: [
           { label: "Линейная модель: n", value: n },
-          { label: "Деления до одного: ⌈log₂ n⌉", value: levels },
+          { label: "Деления до одного: log₂ n", value: levels },
         ],
         meaning: "Модель посещений и делений; не реальные сравнения поиска",
       };

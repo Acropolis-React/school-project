@@ -178,9 +178,9 @@ export function ExperimentSettings({
               type="number"
               min="1"
               max={maxInputSize - 1}
-              value={draft.minSize}
+              value={Number.isNaN(draft.minSize) ? "" : draft.minSize}
               onChange={(event) =>
-                onConfigChange({ minSize: Number(event.target.value) })
+                onConfigChange({ minSize: event.target.valueAsNumber })
               }
               className={`${controlClass} font-mono`}
             />
@@ -194,9 +194,9 @@ export function ExperimentSettings({
               type="number"
               min="2"
               max={maxInputSize}
-              value={draft.maxSize}
+              value={Number.isNaN(draft.maxSize) ? "" : draft.maxSize}
               onChange={(event) =>
-                onConfigChange({ maxSize: Number(event.target.value) })
+                onConfigChange({ maxSize: event.target.valueAsNumber })
               }
               className={`${controlClass} font-mono`}
             />

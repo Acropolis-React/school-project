@@ -26,7 +26,9 @@ export function AdvancedSettings({
     instrumented && draft.metric !== defaultConfig.metric
       ? `Метрика: ${operationMetricOptions.find((option) => option.id === draft.metric)?.shortLabel}`
       : null,
-    instrumented && draft.seed !== defaultConfig.seed
+    instrumented &&
+    Number.isFinite(draft.seed) &&
+    draft.seed !== defaultConfig.seed
       ? `Seed: ${draft.seed}`
       : null,
     instrumented &&

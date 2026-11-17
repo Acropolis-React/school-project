@@ -109,9 +109,9 @@ export function InstrumentedSettings({
             type="number"
             min="0"
             max="4294967295"
-            value={draft.seed}
+            value={Number.isNaN(draft.seed) ? "" : draft.seed}
             onChange={(event) =>
-              onConfigChange({ seed: Number(event.target.value) })
+              onConfigChange({ seed: event.target.valueAsNumber })
             }
             className={`${controlClass} font-mono`}
           />

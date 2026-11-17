@@ -41,7 +41,7 @@ export function QuestionBlock({
   };
 
   return (
-    <div>
+    <div id={question.id} tabIndex={-1} className="scroll-mt-20">
       <h2 className="text-xl font-semibold">{heading}</h2>
       <p className="mt-3 text-sm leading-6 text-text-secondary sm:text-base">
         {question.prompt}

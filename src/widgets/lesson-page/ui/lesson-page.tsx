@@ -2,7 +2,7 @@
 
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useEffectEvent, useState } from "react";
 import type { LearningProgress } from "@/entities/learning-progress";
 import {
   codeTraceExercise,
@@ -38,6 +38,13 @@ function createInitialQuestionStates(
   }, {});
 }
 
+function getReviewStep(lesson: Lesson, questionId: string) {
+  if (questionId === lesson.hypothesis.id) return 1;
+  if (lesson.slug === "analyze-code" && questionId === codeTraceExercise.id)
+    return 2;
+  if (lesson.practice.some((question) => question.id === questionId)) return 4;
+}
+
 export function LessonPage({ lesson }: { lesson: Lesson }) {
   const { progress, hydrated, visitStep, completeLesson } =
     useLearningProgress();
@@ -45,19 +52,34 @@ export function LessonPage({ lesson }: { lesson: Lesson }) {
   const [questionStates, setQuestionStates] = useState(() =>
     createInitialQuestionStates(lesson),
   );
-  const initializedLessonSlug = useRef<string | null>(null);
   const access = getLessonStepAccess(lesson, progress);
 
-  useEffect(() => {
-    if (!hydrated || initializedLessonSlug.current === lesson.slug) return;
-
-    initializedLessonSlug.current = lesson.slug;
-    const savedStep = progress.lessonSteps[lesson.slug] ?? 0;
-    const restoredStep = Math.min(savedStep, access.maxAccessibleStep);
+  const restoreLesson = useEffectEvent(() => {
+    const questionId = window.location.hash.slice(1);
+    const reviewStep = getReviewStep(lesson, questionId);
+    const savedStep = progress.lessonSteps[lesson.slug];
+    const restoredStep = Math.min(
+      reviewStep ?? savedStep ?? 0,
+      access.maxAccessibleStep,
+    );
     setStep(restoredStep);
-    if (savedStep !== restoredStep) visitStep(lesson.slug, restoredStep);
+    if (savedStep !== restoredStep || progress.lastLessonSlug !== lesson.slug)
+      visitStep(lesson.slug, restoredStep);
     setQuestionStates(createInitialQuestionStates(lesson, progress));
-  }, [hydrated, lesson, progress, access.maxAccessibleStep, visitStep]);
+
+    if (restoredStep === reviewStep) {
+      const frame = requestAnimationFrame(() => {
+        const question = document.getElementById(questionId);
+        question?.focus({ preventScroll: true });
+        question?.scrollIntoView();
+      });
+      return () => cancelAnimationFrame(frame);
+    }
+  });
+
+  useEffect(() => {
+    if (hydrated) return restoreLesson();
+  }, [hydrated]);
 
   const goTo = (nextStep: number) => {
     if (!hydrated) return;
@@ -67,6 +89,12 @@ export function LessonPage({ lesson }: { lesson: Lesson }) {
     );
     setStep(bounded);
     visitStep(lesson.slug, bounded);
+    if (window.location.hash)
+      window.history.replaceState(
+        null,
+        "",
+        window.location.pathname + window.location.search,
+      );
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 

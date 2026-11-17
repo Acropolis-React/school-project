@@ -21,7 +21,7 @@ export function CodeTraceStep({
   if (completed && !state.submitted && !repeating) {
     return (
       <section>
-        <h2 className="text-xl font-semibold">Практика: проследите код</h2>
+        <h2 className="text-xl font-semibold">Трассировка: проследите код</h2>
         <p className="mt-3 text-sm leading-6 text-text-secondary">
           Этот шаг был выполнен ранее. Ответ для новой задачи ещё не сохранён.
         </p>
@@ -40,7 +40,7 @@ export function CodeTraceStep({
     <QuestionBlock
       lessonSlug="analyze-code"
       question={codeTraceExercise}
-      heading="Практика: проследите код"
+      heading="Трассировка: проследите код"
       state={state}
       onStateChange={onStateChange}
       onCorrect={() => completeAssignment(assignment.id)}

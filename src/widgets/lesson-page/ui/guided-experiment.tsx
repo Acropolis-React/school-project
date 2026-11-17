@@ -1,4 +1,3 @@
-import { useState } from "react";
 import type { LessonSlug } from "@/entities/lesson";
 import {
   ExperimentTable,
@@ -10,14 +9,33 @@ import { useLearningProgress } from "@/features/track-lesson-progress";
 import { Button } from "@/shared/ui";
 import { QuadraticComparison } from "./quadratic-comparison";
 
-export function GuidedExperiment({ slug }: { slug: LessonSlug }) {
+export const initialGuidedAttempt = {
+  choice: "",
+  phase: "prediction",
+  repeating: false,
+} satisfies GuidedAttempt;
+
+export type GuidedAttempt = {
+  choice: string;
+  phase: "prediction" | "experiment" | "result";
+  repeating: boolean;
+};
+
+export function GuidedExperiment({
+  slug,
+  attempt,
+  onAttemptChange,
+}: {
+  slug: LessonSlug;
+  attempt: GuidedAttempt;
+  onAttemptChange: (attempt: GuidedAttempt) => void;
+}) {
   const assignment = getGuidedAssignment(slug);
   const { progress, completeAssignment, recordPrediction } =
     useLearningProgress();
-  const [choice, setChoice] = useState("");
-  const [confirmed, setConfirmed] = useState(false);
-  const [ran, setRan] = useState(false);
-  const [repeating, setRepeating] = useState(false);
+  const { choice, phase, repeating } = attempt;
+  const confirmed = phase !== "prediction";
+  const ran = phase === "result";
   const completed =
     progress.completedAssignments.includes(assignment.id) ||
     progress.completedLessonSlugs.includes(slug);
@@ -56,9 +74,7 @@ export function GuidedExperiment({ slug }: { slug: LessonSlug }) {
       {!showSaved && !confirmed ? (
         <>
           <fieldset className="mt-5 space-y-2">
-            <legend className="mb-2 text-sm font-medium">
-              Выберите прогноз
-            </legend>
+            <legend className="mb-2 text-sm font-medium">Ваш прогноз</legend>
             {assignment.choices.map((item) => (
               <label
                 key={item.id}
@@ -69,7 +85,9 @@ export function GuidedExperiment({ slug }: { slug: LessonSlug }) {
                   name={`prediction-${assignment.id}`}
                   className="size-4 shrink-0 accent-[#4cc9a6]"
                   checked={choice === item.id}
-                  onChange={() => setChoice(item.id)}
+                  onChange={() =>
+                    onAttemptChange({ ...attempt, choice: item.id })
+                  }
                 />
                 {item.label}
               </label>
@@ -79,7 +97,7 @@ export function GuidedExperiment({ slug }: { slug: LessonSlug }) {
             type="button"
             className="mt-5 w-full sm:w-auto"
             disabled={!choice}
-            onClick={() => setConfirmed(true)}
+            onClick={() => onAttemptChange({ ...attempt, phase: "experiment" })}
           >
             Подтвердить прогноз
           </Button>
@@ -90,14 +108,17 @@ export function GuidedExperiment({ slug }: { slug: LessonSlug }) {
           <p className="text-sm leading-6">Ваш прогноз: {option?.label}</p>
           <p className="mt-3 text-sm leading-6 text-text-secondary">
             {experimentSourceMetadata[assignment.config.source].description}{" "}
-            Размеры: {assignment.config.minSize}–{assignment.config.maxSize}.
+            Размеры входа — от {assignment.config.minSize} до{" "}
+            {assignment.config.maxSize}.
           </p>
           <Button
             type="button"
             className="mt-5 w-full sm:w-auto"
-            onClick={() => setRan(true)}
+            onClick={() => onAttemptChange({ ...attempt, phase: "result" })}
           >
-            Провести эксперимент
+            {assignment.config.source === "theoretical"
+              ? "Рассчитать модель"
+              : "Запустить эксперимент"}
           </Button>
         </div>
       ) : null}
@@ -115,7 +136,7 @@ export function GuidedExperiment({ slug }: { slug: LessonSlug }) {
           {slug === "linear-and-quadratic" ? (
             <QuadraticComparison result={result} />
           ) : null}
-          <ExperimentTable result={result} />
+          <ExperimentTable result={result} compact />
         </div>
       ))}
       {(ran || (showSaved && savedOption)) && option ? (
@@ -146,7 +167,7 @@ export function GuidedExperiment({ slug }: { slug: LessonSlug }) {
           onClick={() => {
             recordPrediction(assignment.id, choice);
             completeAssignment(assignment.id);
-            setRepeating(false);
+            onAttemptChange(initialGuidedAttempt);
           }}
         >
           Завершить исследование
@@ -157,12 +178,9 @@ export function GuidedExperiment({ slug }: { slug: LessonSlug }) {
           type="button"
           variant="secondary"
           className="mt-5 w-full sm:w-auto"
-          onClick={() => {
-            setChoice("");
-            setConfirmed(false);
-            setRan(false);
-            setRepeating(true);
-          }}
+          onClick={() =>
+            onAttemptChange({ ...initialGuidedAttempt, repeating: true })
+          }
         >
           Повторить исследование
         </Button>

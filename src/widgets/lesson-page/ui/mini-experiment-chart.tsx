@@ -16,6 +16,12 @@ const formatter = new Intl.NumberFormat("ru-RU", {
   notation: "compact",
   maximumFractionDigits: 1,
 });
+const formulas: Record<Lesson["experimentModels"][number], string> = {
+  linear: "n",
+  quadratic: "n²",
+  logarithmic: "log₂ n",
+  linearithmic: "n · log₂ n",
+};
 
 export function MiniExperimentChart({ lesson }: { lesson: Lesson }) {
   const data = useMemo(
@@ -28,9 +34,11 @@ export function MiniExperimentChart({ lesson }: { lesson: Lesson }) {
       }),
     [lesson.experimentModels],
   );
-  const models = lesson.experimentModels
-    .map(getComplexityModel)
-    .filter((model) => model !== undefined);
+  const models = lesson.experimentModels.map((id) => ({
+    id,
+    formula: formulas[id],
+    color: getComplexityModel(id)?.color,
+  }));
 
   return (
     <section
@@ -40,14 +48,14 @@ export function MiniExperimentChart({ lesson }: { lesson: Lesson }) {
       <div className="flex flex-col gap-2 border-b border-border pb-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h3 id="lesson-chart-heading" className="font-semibold">
-            Дополнительный график моделей
+            Как растут значения формул
           </h3>
           <p className="mt-1 text-xs text-text-muted">
             Ось X — размер входа n · ось Y — модельное значение, усл. ед.
           </p>
         </div>
         <span className="text-xs font-medium text-accent">
-          Теоретическая модель · не реальные измерения
+          Теоретическая модель
         </span>
       </div>
       <div
@@ -67,6 +75,9 @@ export function MiniExperimentChart({ lesson }: { lesson: Lesson }) {
             />
             <XAxis
               dataKey="inputSize"
+              type="number"
+              domain={["dataMin", "dataMax"]}
+              ticks={data.map((point) => point.inputSize)}
               stroke="#718096"
               tickLine={false}
               axisLine={{ stroke: "#334155" }}
@@ -96,23 +107,18 @@ export function MiniExperimentChart({ lesson }: { lesson: Lesson }) {
                 fontSize: 12,
               }}
               labelStyle={{ color: "#e6edf3" }}
-              formatter={(value, name) => [
-                Number(value).toLocaleString("ru-RU"),
-                models.find((model) => model.id === name)?.shortLabel ?? name,
-              ]}
+              labelFormatter={(value) => `n = ${value}`}
+              formatter={(value) => Number(value).toLocaleString("ru-RU")}
             />
             <Legend
               iconType="plainline"
               wrapperStyle={{ fontSize: 12, paddingTop: 8 }}
-              formatter={(value) =>
-                models.find((model) => model.id === value)?.shortLabel ?? value
-              }
             />
             {models.map((model) => (
               <Line
                 key={model.id}
-                type="monotone"
                 dataKey={model.id}
+                name={model.formula}
                 stroke={model.color}
                 strokeWidth={2.2}
                 dot={{ r: 2.5, fill: model.color, strokeWidth: 0 }}
@@ -124,13 +130,13 @@ export function MiniExperimentChart({ lesson }: { lesson: Lesson }) {
         </ResponsiveContainer>
       </div>
       <details className="mt-4 border-t border-border pt-3 text-sm">
-        <summary className="cursor-pointer text-text-secondary">
+        <summary className="min-h-11 cursor-pointer py-2 text-text-secondary focus-visible:outline-2 focus-visible:outline-accent">
           Таблица модельных значений
         </summary>
         <div className="mt-3 overflow-x-auto">
           <table className="w-full text-left text-sm">
             <caption className="pb-2 text-left text-xs text-text-muted">
-              Теоретические функции, условные единицы; не счётчики и не время.
+              Значения формул в условных единицах, округлённые до целых.
             </caption>
             <thead>
               <tr className="border-b border-border">
@@ -139,7 +145,7 @@ export function MiniExperimentChart({ lesson }: { lesson: Lesson }) {
                 </th>
                 {models.map((model) => (
                   <th key={model.id} scope="col" className="py-2 text-right">
-                    {model.shortLabel}
+                    {model.formula}
                   </th>
                 ))}
               </tr>
